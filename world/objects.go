@@ -72,15 +72,33 @@ func (b Box)IsTouching(othr Shape) bool {
 type WObject struct {
 	Shape
 	Object
-	children map[string](*WObject)
-	
+	Relations map[string](*WObject)
+}
+
+func NewWObject(name string, shape Shape) WObject {
+	obj := WObject{shape, NewObject(), make(map[string](*WObject))}
+	obj.SetName(name)
+	return obj
 }
 
 func (obj WObject)RelatedTo(child *WObject) bool {
-	for _, val := range obj.children {
+	for _, val := range obj.Relations {
 		if val == child {
 			return true
 		}
 	}
 	return false
+}
+
+func (obj Object)Name() string {
+	return obj["name"].(string)
+}
+
+func (obj Object)SetName(name string) {
+	obj["name"] = name
+}
+
+func (obj WObject)PutIn(container WObject) {
+	obj.Relations["in"]=&container
+	container.Relations["contains"]=&obj
 }

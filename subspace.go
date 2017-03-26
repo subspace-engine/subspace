@@ -4,11 +4,14 @@ import "fmt"
 import "bufio"
 import "net"
 import "strings"
-import "subspace/world"
+import "github.com/rynkruger/subspace/world"
 
-func handleConnection(con net.Conn) {
+func handleConnection(con net.Conn, sim world.Sim) {
 	defer con.Close()
 	rw := bufio.NewReadWriter(bufio.NewReader(con), bufio.NewWriter(con))
+	agent := world.NewWObject("you", world.NewBox(0,0,0,1,2,1))
+	client := world.NewClient(agent)
+	sim.AddClient(client)
 	rw.WriteString("Subspace 1.0\n")
 	rw.Flush()
 	for {
@@ -22,9 +25,17 @@ func handleConnection(con net.Conn) {
 			rw.Flush()
 			return
 		}
-		fmt.Fprintf(rw, "Read : %s of length %d\n", s, len(s))
+		client.Queue <- s
+		resp := <- client.Queue
+				rw.WriteString(resp)
 		rw.Flush()
 	}
+}
+
+func RunSim(sim world.Sim) {
+	world1 := world.NewWObject("world", world.NewBox(-1000000, -1000000, -1000000, 2000000, 2000000, 2000000))
+	sim.AddWorld(world1)
+	sim.Run()
 }
 
 func main() {
@@ -36,12 +47,15 @@ func main() {
 		fmt.Println("Unable to create listener!")
 		return
 	}
+	sim := world.NewSim()
+	go RunSim(sim)
 	for {
 		con, err := ln.Accept()
 		if err != nil {
 			fmt.Println("Unable to accept connection!")
 			return
 		}
-		go handleConnection(con)
+
+		go handleConnection(con, sim)
 	}
 }
