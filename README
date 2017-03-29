@@ -1,0 +1,4 @@
+This project is called subspace for now, until we decide on a better name.
+
+The license is also GPL3 for the moment, as it is the most restrictive open source license. Later we can decide if we want to license it under LGPL (allowing use of the engine in commercial projects, but with all modifications still returned to the project). We can also decide to dual-license, making it free and open source for open source projects, but charging a fee for commercial projects.
+

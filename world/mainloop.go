@@ -1,6 +1,7 @@
 package world
 
 import "fmt"
+import "time"
 
 type Client struct {
 	Queue chan string
@@ -45,8 +46,9 @@ func PrintRelations(agent WObject) string {
 func (sim Sim)Run() {
 	fmt.Println("Running")
 	for {
-		for _, client := range sim.clients {
-			fmt.Println(len(sim.clients))
+		time.Sleep(1000*time.Millisecond)
+		fmt.Println(len(sim.clients))
+				for _, client := range sim.clients {
 			fmt.Println(client)
 		command := <- client.Queue
 		switch command {

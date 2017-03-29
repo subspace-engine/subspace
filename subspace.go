@@ -6,7 +6,7 @@ import "net"
 import "strings"
 import "github.com/rynkruger/subspace/world"
 
-func handleConnection(con net.Conn, sim world.Sim) {
+func handleConnection(con net.Conn, sim *world.Sim) {
 	defer con.Close()
 	rw := bufio.NewReadWriter(bufio.NewReader(con), bufio.NewWriter(con))
 	agent := world.NewWObject("you", world.NewBox(0,0,0,1,2,1))
@@ -32,7 +32,7 @@ func handleConnection(con net.Conn, sim world.Sim) {
 	}
 }
 
-func RunSim(sim world.Sim) {
+func RunSim(sim *world.Sim) {
 	world1 := world.NewWObject("world", world.NewBox(-1000000, -1000000, -1000000, 2000000, 2000000, 2000000))
 	sim.AddWorld(world1)
 	sim.Run()
@@ -48,7 +48,7 @@ func main() {
 		return
 	}
 	sim := world.NewSim()
-	go RunSim(sim)
+	go RunSim(&sim)
 	for {
 		con, err := ln.Accept()
 		if err != nil {
@@ -56,6 +56,6 @@ func main() {
 			return
 		}
 
-		go handleConnection(con, sim)
+		go handleConnection(con, &sim)
 	}
 }
