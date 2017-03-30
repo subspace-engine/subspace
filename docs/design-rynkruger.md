@@ -1,10 +1,6 @@
 # Thoughts on an Engine Design
 #### Rynhardt Kruger, on the 29th day in the month of March, A.D. 2017
 
-This file contains Markdown directives. To view this file as HTML, process it with markdown. For instance, to view an HTML version in the console, do:
-
-$ markdown design-rynkruger.md | elinks
-
 ## World Layout
 
 All simulation should be contained in a "world", of which several can be active at once. Each world should be able to have one or more active players associated with it, worlds with no active players should be unloaded (and stored if desired).
