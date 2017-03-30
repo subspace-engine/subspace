@@ -16,9 +16,13 @@ Currently this project is in the beginning stage, so don't expect much, but watc
 
 This project is written in Go, and for now should compile with a simple:
 
-$ go build
+`$ go build`
 
 To checkout this project into your $GOPATH, do:
 
-$ go get -u https://github.com/rynkruger/subspace
+`$ go get -u https://github.com/rynkruger/subspace`
+
+or
+
+`> go get github.com/rynkruger/subspace`
 
