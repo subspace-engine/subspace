@@ -1,9 +1,7 @@
 ### Some interesting reading:
  * http://devs.cloudimmunity.com/gotchas-and-common-mistakes-in-go-golang/index.html
  * https://github.com/golang/go/wiki/LearnConcurrency
-
- * A bit about GRPC and protocol buffers which I think can work for
-  distributed communication: http://www.grpc.io/
+ * http://www.grpc.io/
 
 ---
 
