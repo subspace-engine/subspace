@@ -1,3 +1,12 @@
+### Some interesting reading:
+ * http://devs.cloudimmunity.com/gotchas-and-common-mistakes-in-go-golang/index.html
+ * https://github.com/golang/go/wiki/LearnConcurrency
+
+ * A bit about GRPC and protocol buffers which I think can work for
+  distributed communication: http://www.grpc.io/
+
+---
+
 It is often easier to send a value over a channel rather than
 synchronising access to it with a mutex. The latter will be faster if
 done right though, but the first is more debugable.
