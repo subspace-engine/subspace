@@ -44,6 +44,8 @@ We need to figure out how we are going to organize our team and our discussions.
  * Should we put in a pull-request for each feature? 
  * If using pull-requests, how long to wait before merging? 
  * Use merge? Rebase? Something else? 
+ * Edit documents directly on the codebase?
+ * Fork the codebase?
  
 ### Engine Focus
 #### Motivations
