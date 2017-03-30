@@ -1,0 +1,15 @@
+syntax = "proto3";
+package clientserver;
+
+service MessagesToServer {
+  rpc SendMessages (stream Command) returns (ServerResponse) {}
+}
+
+message Command {
+  string commandText = 1;
+}
+
+message ServerResponse {
+  string response = 1;
+}
+

@@ -1,0 +1,1 @@
+protoc -I ./ ./clientserver/basic_service.proto --go_out=plugins=grpc:./
