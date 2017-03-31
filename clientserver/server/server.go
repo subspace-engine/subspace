@@ -6,7 +6,6 @@ import (
 	"net"
 
 	pb "github.com/rynkruger/subspace/clientserver"
-	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 )
 
@@ -17,7 +16,7 @@ const (
 // server is used to implement GreeterServer.
 type server struct{}
 
-func (s *server) SendMessages(ctx context.Context, in pb.MessagesToServer_SendMessagesServer)  error {
+func (s *server) SendMessages(in pb.Messenger_SendMessagesServer)  error {
 	command, err := in.Recv()
 	if err != nil {
 		log.Fatalf("Failed to receive anything: %v", err)
@@ -29,8 +28,9 @@ func (s *server) SendMessages(ctx context.Context, in pb.MessagesToServer_SendMe
 		log.Fatalf("Failed to receive anything: %v", err)
 	}
 	fmt.Println("Received command: %v", command)
+	fmt.Println("Done receiving messages.")
 
-	in.SendAndClose(&pb.ServerResponse{"hello"})
+	in.SendAndClose(&pb.Response{"hello"})
 	return nil
 }
 
@@ -43,10 +43,11 @@ func main() {
 	}
 
 	s := grpc.NewServer()
-	pb.RegisterMessagesToServerServer(s, &server{})
+	pb.RegisterMessengerServer(s, &server{})
 
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("Failed to serve: %v", err)
 	}
 
+	fmt.Println("Closing server")
 }
