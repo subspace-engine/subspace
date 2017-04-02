@@ -1,15 +1,14 @@
 syntax = "proto3";
 package clientserver;
 
-service Messenger {
-  rpc SendMessages (stream Command) returns (Response) {}
+service Game {
+  rpc Play(stream Command) returns (stream Info) {}
 }
 
 message Command {
-  string commandText = 1;
+  string text = 1;
 }
 
-message Response {
-  string response = 1;
+message Info {
+  string text = 1;
 }
-

@@ -7,6 +7,7 @@ import (
 	pb "github.com/rynkruger/subspace/clientserver"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
+	"io"
 )
 
 const (
@@ -16,26 +17,54 @@ const (
 func main() {
 	// Set up a connection to the server.
 	fmt.Println("Starting client!")
-	conn, err := grpc.Dial(address, grpc.WithInsecure()) // TODO make secure?
+	conn, err := grpc.Dial(address, grpc.WithInsecure()) // TODO Make secure
 
 	if err != nil {
 		log.Fatalf("Did not connect: %v", err)
 	}
-
 	defer conn.Close()
-	client := pb.NewMessengerClient(conn)
 
-	stream, err := client.SendMessages(context.Background())
+	client := pb.NewGameClient(conn)
+
+	stream, err := client.Play(context.Background())
+
 	if err != nil {
 		log.Fatalf("Could not start client stream: %v", err)
 	}
 
-	stream.Send(&pb.Command{"command1"})
-	stream.Send(&pb.Command{"command2"})
-	response, err:= stream.CloseAndRecv()
-	if err != nil {
-		log.Fatalf("Could not receive response from server: %v", err)
+	waitc := make(chan struct{})
+	go func() {
+		for {
+			in, err := stream.Recv()
+			if err == io.EOF {
+				// read done.
+				close(waitc)
+				return
+			}
+			if err != nil {
+				log.Fatalf("Failed to receive info : %v", err)
+			}
+
+			fmt.Println("Got info: %v", in)
+		}
+	}()
+
+	commands := []*pb.Command{
+		{Text:"firstCommamnd"},
+		{Text:"secondCommand"},
 	}
-	log.Printf("Server response: %s", response)
+
+	for _, command := range commands {
+		if err := stream.Send(command); err != nil {
+			log.Fatalf("Failed to send a note: %v", err)
+		}
+	}
+
+	err = stream.CloseSend()
+
+	if err != nil {
+		log.Fatalf("%v.CloseSend() got error %v, want %v", stream, err, nil)
+	}
+	<-waitc
 }
 
