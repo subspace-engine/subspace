@@ -24,5 +24,5 @@ To checkout this project into your $GOPATH, do:
 
 or
 
-`> go get github.com/rynkruger/subspace`
+`> go get github.com/subspace-engine/subspace`
 
