@@ -20,7 +20,7 @@ This project is written in Go, and for now should compile with a simple:
 
 To checkout this project into your $GOPATH, do:
 
-`$ go get -u github.com/subspace-engine/subspace
+`$ go get -u github.com/subspace-engine/subspace`
 
 or
 
