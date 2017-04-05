@@ -44,7 +44,7 @@ func PrintRelations(agent WObject) string {
 
 
 func (sim Sim)Run() {
-	fmt.Println("Running")
+	fmt.Println("Running mainloop")
 	for {
 		time.Sleep(1000*time.Millisecond)
 		fmt.Println(len(sim.clients))
