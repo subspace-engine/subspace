@@ -4,7 +4,7 @@ import "fmt"
 import "bufio"
 import "net"
 import "strings"
-import "github.com/rynkruger/subspace/world"
+import "github.com/subspace-engine/subspace/world"
 
 func handleConnection(con net.Conn, sim *world.Sim) {
 	defer con.Close()
