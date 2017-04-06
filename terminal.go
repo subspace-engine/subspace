@@ -10,9 +10,6 @@ func runTermbox() {
 		panic(err)
 	}
 
-	//termbox.Clear(termbox.ColorGreen, termbox.ColorBlue)
-	termbox.Flush()
-
 	numX := 0
 	numY := 0
 	loop:
@@ -21,8 +18,6 @@ func runTermbox() {
 		case termbox.EventKey:
 			switch ev.Key {
 			case termbox.KeyEsc:
-				break loop
-			case termbox.KeyF1:
 				break loop
 			case termbox.KeyArrowUp:
 				numY -= 1
@@ -34,7 +29,6 @@ func runTermbox() {
 				numX += 1
 			}
 		}
-		// termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
 		termbox.SetCell(numX, numY, rune(48+((numX + numY)%10)), termbox.ColorGreen, termbox.ColorDefault)
 		termbox.Flush()
 	}
