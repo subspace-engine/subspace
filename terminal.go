@@ -35,8 +35,3 @@ func runTermbox() {
 
 	defer termbox.Close()
 }
-
-func main() {
-	runTermbox()
-
-}
