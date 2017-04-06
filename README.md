@@ -8,7 +8,7 @@ This file, and others in this project, contain Markdown directives. To view thes
 
 ## Status
 
-**Build Status:**  [![Build Status](https://api.travis-ci.org/subspace-engine/subspace.svg?branch=master)](https://travis-ci.org/subspace-engine/subspace)  
+[![Build Status](https://api.travis-ci.org/subspace-engine/subspace.svg?branch=master)](https://travis-ci.org/subspace-engine/subspace)  
 
 ## Overview
 
