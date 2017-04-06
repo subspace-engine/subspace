@@ -1,2 +1,5 @@
+language: go
 
-language go
+go:
+  - 1.8
+  
