@@ -6,6 +6,10 @@
 
 This file, and others in this project, contain Markdown directives. To view these files as HTML, process them with markdown. For instance, to view an HTML version in the console, do: `$ markdown README.md | elinks`
 
+## Status
+
+**Build Status:** [![Build Status](https://travis-ci.org/subspace-engine/subspace](https://travis-ci.org/subspace-engine/subspace#)  
+
 ## Overview
 
 This project aims to create a game engine for the development of accessible games, in particular games using text and (optional) audio as output mediums. The focus is on games simulating physical space, though not necessarily corresponding to the real world.
