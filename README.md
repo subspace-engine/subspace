@@ -6,7 +6,10 @@
 
 ---
 
-![Subspace Logo](/resources/subspace-circle.png "Subspace Logo")
+| | 
+|:-------------:|
+| ![Subspace Logo](/resources/subspace-circle.png "Subspace Logo") |
+| **SUBSPACE** |
 
 ---
 
