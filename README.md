@@ -4,7 +4,11 @@
 
 [![Build Status](https://api.travis-ci.org/subspace-engine/subspace.svg?branch=master)](https://travis-ci.org/subspace-engine/subspace)  
 
+---
+
 ![Subspace Logo](/resources/subspace-circle.png "Subspace Logo")
+
+---
 
 ### Markdown Notes
 
