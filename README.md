@@ -2,15 +2,13 @@
 
 # Subspace Game Engine
 
-![Subspace Logo](https://avatars0.githubusercontent.com/u/26886018?v=3&u=7f7d8ad46f890e0bc975dda96db28885fdfd38e5&s=400 "Subspace Logo")
+[![Build Status](https://api.travis-ci.org/subspace-engine/subspace.svg?branch=master)](https://travis-ci.org/subspace-engine/subspace)  
+
+![Subspace Logo](/resources/subspace-circle.png "Subspace Logo")
 
 ### Markdown Notes
 
 This file, and others in this project, contain Markdown directives. To view these files as HTML, process them with markdown. For instance, to view an HTML version in the console, do: `$ markdown README.md | elinks`
-
-## Status
-
-[![Build Status](https://api.travis-ci.org/subspace-engine/subspace.svg?branch=master)](https://travis-ci.org/subspace-engine/subspace)  
 
 ## Overview
 
