@@ -2,9 +2,11 @@ package main
 
 import (
 	"github.com/subspace-engine/subspace/world"
+	"github.com/subspace-engine/subspace/ui"
 	"bufio"
 	"net"
 	"strings"
+	"fmt"
 )
 
 func handleConnection(con net.Conn, sim *world.Sim) {
@@ -39,10 +41,7 @@ func RunSim(sim *world.Sim) {
 	sim.Run()
 }
 
-func main() {
-	runTermbox()
-
-	/*
+func mainEngineDemo() {
 	obj := world.NewObject()
 	fmt.Println(obj)
 	fmt.Println("Subspace Core Starting")
@@ -62,6 +61,8 @@ func main() {
 
 		go handleConnection(con, &sim)
 	}
+}
 
-	*/
+func main() {
+	ui.RunTermboxDemo()
 }
