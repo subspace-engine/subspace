@@ -5,7 +5,7 @@
 | **SUBSPACE** | 
 |:-------------:|
 | ![Subspace Logo](/resources/subspace-circle.png "Subspace Logo") |
-| [![Build Status](https://travis-ci.org/subspace-engine/subspace.svg?branch=master)](https://travis-ci.org/subspace-engine/subspace)   |
+| [![Build Status](https://travis-ci.org/subspace-engine/subspace.svg?branch=master)](https://travis-ci.org/subspace-engine/subspace "Build Status (click for more info)")   |
 
 ---
 
