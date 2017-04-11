@@ -65,19 +65,22 @@ func MakeTiles(width int, height int, depth int) Tiles {
 	return tiles
 }
 
-func (self Tiles)Move(mover model.Mover, x float64, y float64, z float64) {
+func (self Tiles)Move(mover model.Mover, x float64, y float64, z float64) int {
 	nx :=int(mover.X()+x)
 	ny:=int(mover.Y()+y)
 	nz:=int(mover.Z()+z)
-	if nx>=0&&nx<len(self)&&ny>=0&&ny<len(self[nx])&&nz>=0&&nz<len(self[nx][ny]) {
+	if self.Encloses(nx,ny,nz) {
 		if self[nx][ny][nz].IsPassable() {
 			self[int(mover.X())][int(mover.Y())][int(mover.Z())].Remove(mover)
 			mover.SetX(mover.X()+x)
 			mover.SetY(mover.Y()+y)
 			mover.SetZ(mover.Z()+z)
 			self[nx][ny][nz].Add(mover)
+			return 0
 		}
+		return 1
 	}
+	return -1
 }
 
 func (self Tiles)GetTile(mover model.Mover) Tile {
@@ -86,4 +89,14 @@ func (self Tiles)GetTile(mover model.Mover) Tile {
 
 func (self Tiles)SetTile(x int, y int, z int, tile Tile) {
 	self[x][y][z]=tile
+}
+
+func (self Tiles)Encloses(x int, y int, z int) bool {
+	return x>=0&&x<len(self)&&y>=0&&y<len(self[x])&&z>=0&&z<len(self[x][y])
+}
+
+func (self Tiles)Add(x int, y int, z int, mover model.Mover) {
+	if self.Encloses(x,y,z) {
+		self[x][y][z].Add(mover)
+	}
 }

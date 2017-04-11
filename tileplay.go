@@ -28,6 +28,7 @@ func runTiles() {
 	me.SetY(0)
 	me.SetZ(50)
 	makeWorld(tiles)
+	tiles.Add(50,0,50,&me)
 	loop:
 	for {
 		switch ev := termbox.PollEvent(); ev.Type {
@@ -47,7 +48,7 @@ func runTiles() {
 				tiles.Move(&me,-1,0,0)
 				fmt.Println(tiles.GetTile(&me).Type.Text())
 			case termbox.KeyArrowRight:
-				tiles.Move(&me,0,0,1)
+				tiles.Move(&me,1,0,0)
 				fmt.Println(tiles.GetTile(&me).Type.Text())
 			}
 		}
