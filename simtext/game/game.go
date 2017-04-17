@@ -1,5 +1,7 @@
 package game
 
+import "strings"
+
 type Output interface  {
 	Print(s string)
 	Println(s string)
@@ -18,6 +20,7 @@ func (g *LoopHandler) Start() {
 	g.MainLoop()
 }
 
+/*
 func (g *LoopHandler) MainLoop() {
 	in := g.In
 	out := g.Out
@@ -35,8 +38,7 @@ func (g *LoopHandler) MainLoop() {
 			outChan <- "Welcome to Simtext!"
 		}()
 
-		for i := 0; i < 1; i++ {
-			select {
+		select {
 			case inMessage := <-inChan:
 				exitMessage := "exit"
 				if (inMessage == exitMessage) {
@@ -46,9 +48,35 @@ func (g *LoopHandler) MainLoop() {
 					out.Println("received: " + inMessage + "!")
 				}
 
-			// case outMessage := <-outChan:
-				// out.Println("outMessage: " + outMessage)
-			}
+			case outMessage := <-outChan:
+				out.Println(outMessage)
 		}
 	}
+}
+*/
+
+func (g *LoopHandler) MainLoop() {
+	out := g.Out
+
+	out.Println("Welcome to Simtext!")
+
+	Loop:
+	for {
+		if doExit := g.LoopStep() ; doExit {
+			break Loop
+		}
+	}
+}
+
+func (g *LoopHandler) LoopStep() (doExit bool) {
+	doExit = false
+
+	in := g.In
+
+	command := strings.ToLower(in.Read())
+
+	if (command == "exit") {
+		doExit = true
+	}
+	return
 }
