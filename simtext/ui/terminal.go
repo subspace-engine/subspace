@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"bufio"
 	"os"
+	"strings"
 )
 
 type InputOutput interface {
@@ -32,5 +33,6 @@ func (u *ui) Println(message string) {
 
 func (u *ui) Read() (message string) {
 	message , _ = u.reader.ReadString('\n')
+	message = strings.TrimSpace(message)
 	return
 }
