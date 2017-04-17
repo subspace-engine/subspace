@@ -7,6 +7,6 @@ import (
 
 func main() {
 	inOut := ui.NewInputOutput()
-	game := game.LoopHandler{Out : inOut, In : inOut}
+	game := game.LoopRunner{Out : inOut, In : inOut}
 	game.Start()
 }

@@ -11,55 +11,41 @@ type Input interface  {
 	Read() (s string)
 }
 
-type LoopHandler struct{
+type LoopRunner struct{
 	Out Output
+	In Input
+	CommandsMap map[string]func() bool
+}
+
+type CommandParser struct{
 	In Input
 }
 
-func (g *LoopHandler) Start() {
+type Colonist struct {
+	Name string
+}
+
+type Game struct {
+	MainColonist Colonist
+}
+
+func (g *LoopRunner) Start() {
+	out := g.Out
+	out.Println("Welcome to Simtext!")
+	g.InitializeCommandsMap()
 	g.MainLoop()
 }
 
-/*
-func (g *LoopHandler) MainLoop() {
-	in := g.In
-	out := g.Out
-
-	inChan := make(chan string)
-	outChan := make(chan string)
-
-	Loop:
-	for {
-		go func() {
-			inChan <- in.Read()
-		}()
-
-		go func() {
-			outChan <- "Welcome to Simtext!"
-		}()
-
-		select {
-			case inMessage := <-inChan:
-				exitMessage := "exit"
-				if (inMessage == exitMessage) {
-					out.Println("Exiting")
-					break Loop
-				} else {
-					out.Println("received: " + inMessage + "!")
-				}
-
-			case outMessage := <-outChan:
-				out.Println(outMessage)
-		}
+func (g *LoopRunner) InitializeCommandsMap() {
+	g.CommandsMap = make(map[string]func() bool)
+	exitCommand := func() (shouldExit bool){
+		return true
 	}
+	g.CommandsMap["exit"] = exitCommand
+	g.CommandsMap ["start"] = g.StartNewGame
 }
-*/
 
-func (g *LoopHandler) MainLoop() {
-	out := g.Out
-
-	out.Println("Welcome to Simtext!")
-
+func (g *LoopRunner) MainLoop() {
 	Loop:
 	for {
 		if doExit := g.LoopStep() ; doExit {
@@ -68,15 +54,48 @@ func (g *LoopHandler) MainLoop() {
 	}
 }
 
-func (g *LoopHandler) LoopStep() (doExit bool) {
-	doExit = false
+func (g *LoopRunner) LoopStep() (shouldExit bool) {
+	shouldExit = false
 
 	in := g.In
+	out := g.Out
 
 	command := strings.ToLower(in.Read())
+	commandsMap := g.CommandsMap
 
-	if (command == "exit") {
-		doExit = true
+	commandFunction := commandsMap[command]
+	if commandFunction == nil {
+		out.Println("Command \"" + command + "\" not recognized.")
+	} else {
+		shouldExit = commandFunction()
 	}
 	return
+}
+
+func (g *LoopRunner) StartNewGame() (shouldExit bool) {
+	out := g.Out
+	out.Println("Starting a new game")
+	g.CreateColonist()
+	shouldExit = false
+	return
+}
+
+func (g *LoopRunner) CreateColonist() {
+	out := g.Out
+	out.Println("What would you like to name your first colonist?")
+
+	in := g.In
+	name := in.Read()
+	c := g.CreateColonistWithName(name)
+	out.Println("Created a colonist with the name: \"" + c.Name + "\", is this correct?")
+	answer := strings.ToLower(in.Read())
+	if (answer[0] == 'y') {
+		out.Println("Great!")
+	} else {
+		out.Println("Oh, no! I guess we'll have to try again!")
+	}
+}
+
+func (g *LoopRunner) CreateColonistWithName(name string) (c Colonist){
+	return Colonist{Name : name}
 }

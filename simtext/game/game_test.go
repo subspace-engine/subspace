@@ -27,11 +27,9 @@ func (t *TestInputOutput) Read() (s string){
 	return
 }
 
-func TestMainloop(t *testing.T) {
+func TestExitCommand(t *testing.T) {
 	testMock := &TestInputOutput{}
-	game := game.LoopHandler{Out : testMock, In : testMock}
+	game := game.Runner{Out : testMock, In : testMock}
 	game.Start()
-	if(!true) {
-		t.Error("Not true")
-	}
+	// Will hang if the game does not exit
 }
