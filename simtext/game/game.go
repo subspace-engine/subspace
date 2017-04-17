@@ -14,7 +14,7 @@ type Input interface  {
 type LoopRunner struct{
 	Out Output
 	In Input
-	CommandsMap map[string]func() bool
+	CommandsMap map[string]func() error
 }
 
 type CommandParser struct{
@@ -36,29 +36,47 @@ func (g *LoopRunner) Start() {
 	g.MainLoop()
 }
 
+type ExitCalled struct {
+	s string
+}
+
+func (e *ExitCalled) Error() string {
+	return e.s
+}
+
 func (g *LoopRunner) InitializeCommandsMap() {
-	g.CommandsMap = make(map[string]func() bool)
-	exitCommand := func() (shouldExit bool){
-		return true
+	g.CommandsMap = make(map[string]func() error)
+	exitCommand := func() (err error) {
+		err = &ExitCalled{"A subroutine called exit"}
+		return
 	}
 	g.CommandsMap["exit"] = exitCommand
 	g.CommandsMap ["start"] = g.StartNewGame
+	g.CommandsMap ["commands"] = g.PrintCommands
 }
 
 func (g *LoopRunner) MainLoop() {
 	Loop:
 	for {
-		if doExit := g.LoopStep() ; doExit {
+		if doExit := g.LoopStep() ; doExit != nil {
 			break Loop
 		}
 	}
 }
 
-func (g *LoopRunner) LoopStep() (shouldExit bool) {
-	shouldExit = false
+func (g *LoopRunner) PrintCommands() (err error) {
+	commandsMap := g.CommandsMap
+	for key := range commandsMap {
+		g.Out.Print(key + ",")
+	}
+	err = nil
+	return
+}
 
+func (g *LoopRunner) LoopStep() (err error) {
 	in := g.In
 	out := g.Out
+	err = nil
 
 	command := strings.ToLower(in.Read())
 	commandsMap := g.CommandsMap
@@ -67,16 +85,16 @@ func (g *LoopRunner) LoopStep() (shouldExit bool) {
 	if commandFunction == nil {
 		out.Println("Command \"" + command + "\" not recognized.")
 	} else {
-		shouldExit = commandFunction()
+		err = commandFunction()
 	}
 	return
 }
 
-func (g *LoopRunner) StartNewGame() (shouldExit bool) {
+func (g *LoopRunner) StartNewGame() (err error) {
 	out := g.Out
 	out.Println("Starting a new game")
 	g.CreateColonist()
-	shouldExit = false
+	err = nil
 	return
 }
 
