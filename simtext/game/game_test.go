@@ -29,7 +29,7 @@ func (t *TestInputOutput) Read() (s string){
 
 func TestExitCommand(t *testing.T) {
 	testMock := &TestInputOutput{}
-	game := game.Runner{Out : testMock, In : testMock}
+	game := game.GameManager{Out : testMock, In : testMock}
 	game.Start()
 	// Will hang if the game does not exit
 }
