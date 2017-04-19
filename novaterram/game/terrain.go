@@ -8,18 +8,10 @@ import (
 type Terrain struct {
 	size int
 	voxels [5][5][5]TerrainType
-	cursor *Cursor
 }
 
 type TerrainType uint8
 
-type Position struct {
-	x int
-	y int
-	z int
-}
-
-type Cursor Position
 
 const (
 	SPACE TerrainType = iota
@@ -29,7 +21,7 @@ const (
 	ORE
 )
 
-func (t *Terrain) GetNameOfTerrainAt(p Position) (terrainName string, err error) {
+func (t *Terrain) GetNameOfTerrainAt(p *Position) (terrainName string, err error) {
 	terrainType, err := t.GetTerrainTypeAt(p)
 
 	err = nil
@@ -52,7 +44,7 @@ func (t *Terrain) GetNameOfTerrainAt(p Position) (terrainName string, err error)
 	return
 }
 
-func (t *Terrain) GetSymbolOfTerrainAt(p Position) (terrainName string, err error) {
+func (t *Terrain) GetSymbolOfTerrainAt(p *Position) (terrainName string, err error) {
 	terrainType, err := t.GetTerrainTypeAt(p)
 
 	err = nil
@@ -82,9 +74,9 @@ func (t *Terrain) DrawnTerrainAtZ(z int) (drawnTerrain string, err error){
 
 	fmt.Println("DrawnTerrainAt Z: ", z)
 
-	for x := 0; x < size; x++ {
-		for y:=0; y < size; y++ {
-			symbol, _ := t.GetSymbolOfTerrainAt(Position{x,y,z})
+	for y:=0; y < size; y++ {
+		for x := 0; x < size; x++ {
+			symbol, _ := t.GetSymbolOfTerrainAt(&Position{x,y,z})
 			byteTerrain.WriteString(symbol)
 		}
 		byteTerrain.WriteString("\n")
@@ -94,7 +86,7 @@ func (t *Terrain) DrawnTerrainAtZ(z int) (drawnTerrain string, err error){
 	return
 }
 
-func (t *Terrain) GetTerrainTypeAt(p Position) (terrainType TerrainType, err error) {
+func (t *Terrain) GetTerrainTypeAt(p *Position) (terrainType TerrainType, err error) {
 	terrainType = t.voxels[p.x][p.y][p.z]
 	err = nil
 	return

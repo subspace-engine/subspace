@@ -1,11 +1,29 @@
 package game
 
-import "strings"
+import (
+	"strings"
+)
 
 type World struct {
 	MainColonist *Colonist
 	MainBase *Base
 	Terrain *Terrain
+	Objects *ObjectStore
+	Cursor *Position
+}
+
+type ObjectStore struct {
+	Objects map[Position]*GameObject
+}
+
+type GameObject struct {
+	Name string
+}
+
+type Position struct {
+	x int
+	y int
+	z int
 }
 
 type Base struct {
@@ -16,9 +34,44 @@ type Colonist struct {
 	Name string
 }
 
+func (store *ObjectStore) Initialize() {
+	store.Objects = make(map[Position]*GameObject)
+}
+
+func (store *ObjectStore) AtPosition(p *Position) (object *GameObject, isFound bool, err error) {
+	object, isFound = store.Objects[*p]
+	err = nil
+	return
+}
+
+
+func (store *ObjectStore) AddObjectAt(obj *GameObject, p *Position) (err error) {
+	store.Objects[*p] = obj
+	err = nil
+	return
+}
+
+func (inPos *Position) RelativePosition(x int, y int, z int) (outPos *Position, err error) {
+	outPos = &Position{inPos.x + x, inPos.y + y, inPos.z + z}
+	err = nil
+	return
+}
+
 func (g *GameManager) CreateWorld() (err error) {
 	w := &World{}
 	g.World = w
+
+	c := &Position{2,2,2} // TODO Proper sizes
+	w.Cursor = c
+
+	store := &ObjectStore{}
+	store.Initialize()
+	w.Objects = store
+
+	pos := &Position{2,2,2}
+	obj := &GameObject{"Random Object"}
+	store.AddObjectAt(obj, pos)
+
 	// g.CreateColonist()
 	// g.CreateBase()
 	w.GenerateTerrain()
@@ -104,19 +157,36 @@ func (g *GameManager) Look(args []string) (err error) {
 
 	switch dir {
 	case HERE:
-		out.Println("You looked Here!")
+		name, _ := g.World.Terrain.GetNameOfTerrainAt(g.World.Cursor)
+		out.Println("Here you see " + name)
+		obj, isFound, _ := g.World.Objects.AtPosition(g.World.Cursor)
+		if (isFound) {
+			out.Println("Here there is also " + obj.Name)
+		}
 	case NORTH:
-		out.Println("You looked North!")
+		pos, _ := g.World.Cursor.RelativePosition(0,1,0)
+		name, _ := g.World.Terrain.GetNameOfTerrainAt(pos)
+		out.Println("North you see " + name)
 	case EAST:
-		out.Println("You looked East!")
+		pos, _ := g.World.Cursor.RelativePosition(1,0,0)
+		name, _ := g.World.Terrain.GetNameOfTerrainAt(pos)
+		out.Println("East you see " + name)
 	case SOUTH:
-		out.Println("You looked South!")
+		pos, _ := g.World.Cursor.RelativePosition(0,-1,0)
+		name, _ := g.World.Terrain.GetNameOfTerrainAt(pos)
+		out.Println("South you see " + name)
 	case WEST:
-		out.Println("You looked West!")
+		pos, _ := g.World.Cursor.RelativePosition(-1,0,0)
+		name, _ := g.World.Terrain.GetNameOfTerrainAt(pos)
+		out.Println("West you see " + name)
 	case UP:
-		out.Println("You looked Up!")
+		pos, _ := g.World.Cursor.RelativePosition(0,0,1)
+		name, _ := g.World.Terrain.GetNameOfTerrainAt(pos)
+		out.Println("Up you see " + name)
 	case DOWN:
-		out.Println("You looked Down!")
+		pos, _ := g.World.Cursor.RelativePosition(0,0,-1)
+		name, _ := g.World.Terrain.GetNameOfTerrainAt(pos)
+		out.Println("Down you see " + name)
 	case SHOW_POSSIBILITIES:
 		out.Println("The possible directions are H, N, E, S, W, U, D, C")
 	case CANCEL:
