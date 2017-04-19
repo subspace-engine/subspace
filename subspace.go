@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/subspace-engine/subspace/simtext/ui"
-	"github.com/subspace-engine/subspace/simtext/game"
+	"github.com/subspace-engine/subspace/xenoterra/ui"
+	"github.com/subspace-engine/subspace/xenoterra/game"
 )
 
 func main() {
