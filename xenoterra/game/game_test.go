@@ -2,7 +2,7 @@ package game_test
 
 import (
 	"testing"
-	"github.com/subspace-engine/subspace/simtext/game"
+	"github.com/subspace-engine/subspace/xenoterra/game"
 )
 
 type InputOutput interface {
