@@ -28,7 +28,7 @@ type CommandParser struct{
 
 func (g *GameManager) Start() {
 	out := g.Out
-	out.Println("Welcome to Xenoterra!")
+	out.Println("Nova Terram Viceris!")
 	g.InitializeCommandsMap()
 	g.MainLoop()
 }
