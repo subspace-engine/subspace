@@ -7,11 +7,11 @@ import (
 	"fmt"
 )
 
-func makeWorld(tiles world.Tiles) {
+func makeWorld(space world.Space) {
 	for i:=40; i <61; i++ {
 j:=0
 for k:=40; k<61; k++ {
-				tiles.SetTile(i,j,k,world.MakeTile(world.Floor))
+				space.SetTile(i,j,k,world.MakeBasicTile(world.Floor))
 }
 		}
 
@@ -22,9 +22,9 @@ func runTiles() {
 	if err != nil {
 		panic(err)
 	}
-	tiles := world.MakeTiles(100,100,100)
+	tiles := world.MakeDefaultSpace(100,100,100)
 	me := model.MakeThing("you", "As good looking as ever.")
-	me.SetX(50)
+me.SetX(50)
 	me.SetY(0)
 	me.SetZ(50)
 	makeWorld(tiles)
@@ -40,16 +40,16 @@ func runTiles() {
 				fmt.Printf("%f, %f, %f\n",me.X(), me.Y(), me.Z())
 			case termbox.KeyArrowUp:
 				tiles.Move(&me, 0, 0, -1)
-				fmt.Println(tiles.GetTile(&me).Type.Text())
+				fmt.Println(tiles.GetTile(&me).(world.BasicTile).Type.Text())
 							case termbox.KeyArrowDown:
 				tiles.Move(&me,0,0,1)
-				fmt.Println(tiles.GetTile(&me).Type.Text())
+				fmt.Println(tiles.GetTile(&me).(world.BasicTile).Type.Text())
 			case termbox.KeyArrowLeft:
 				tiles.Move(&me,-1,0,0)
-				fmt.Println(tiles.GetTile(&me).Type.Text())
+				fmt.Println(tiles.GetTile(&me).(world.BasicTile).Type.Text())
 			case termbox.KeyArrowRight:
 				tiles.Move(&me,1,0,0)
-				fmt.Println(tiles.GetTile(&me).Type.Text())
+				fmt.Println(tiles.GetTile(&me).(world.BasicTile).Type.Text())
 			}
 		}
 
