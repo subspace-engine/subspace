@@ -59,11 +59,11 @@ func (t *Terrain) GetSymbolOfTerrainAt(p Position) (terrainName string, err erro
 
 	switch terrainType {
 	case SPACE:
-		terrainName = "."
+		terrainName = "_"
 	case GAS:
-		terrainName = "~"
+		terrainName = "."
 	case SAND:
-		terrainName = ":"
+		terrainName = "="
 	case STONE:
 		terrainName = "+"
 	case ORE:
@@ -105,14 +105,6 @@ func (w *World) GenerateTerrain() (err error) {
 	mid := size/2
 	voxels := [size][size][size]TerrainType{}
 
-	for z := mid; z < size ; z++ {
-		for x := 0; x < size; x++ {
-			for y:=0; y < size; y++ {
-				voxels[x][y][z] = GAS
-			}
-		}
-	}
-
 	for z := 0; z < mid ; z++ {
 		for x := 0; x < size; x++ {
 			for y:=0; y < size; y++ {
@@ -121,7 +113,25 @@ func (w *World) GenerateTerrain() (err error) {
 		}
 	}
 
+	for z := mid; z < size-1 ; z++ {
+		for x := 0; x < size; x++ {
+			for y:=0; y < size; y++ {
+				voxels[x][y][z] = GAS
+			}
+		}
+	}
+
+	for z := size-1; z < size ; z++ {
+		for x := 0; x < size; x++ {
+			for y:=0; y < size; y++ {
+				voxels[x][y][z] = SPACE
+			}
+		}
+	}
+
 	voxels[mid+1][mid][mid] = STONE
+	voxels[mid+1][mid+1][mid-1] = STONE
+
 
 	terrain := &Terrain{size:size, voxels:voxels}
 	w.Terrain = terrain

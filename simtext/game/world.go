@@ -105,6 +105,10 @@ func (g *GameManager) Look(args []string) (err error) {
 	switch dir {
 	case HERE:
 		out.Println("You looked Here!")
+	case NORTH:
+		out.Println("You looked North!")
+	case EAST:
+		out.Println("You looked East!")
 	case SOUTH:
 		out.Println("You looked South!")
 	case WEST:
