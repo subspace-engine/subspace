@@ -28,7 +28,7 @@ type CommandParser struct{
 
 func (g *GameManager) Start() {
 	out := g.Out
-	out.Println("Nova Terram Viceris!")
+	out.Println(" - Novus Orbis - ")
 	g.InitializeCommandsMap()
 	g.MainLoop()
 }
@@ -58,7 +58,6 @@ func (g *GameManager) MainLoop() {
 			break Loop
 		}
 	}
-	g.Out.Println("Exiting game. Goodbye!")
 }
 
 func (g *GameManager) DrawWorld(args []string) (err error) {
