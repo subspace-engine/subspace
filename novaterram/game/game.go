@@ -20,6 +20,7 @@ type GameManager struct{
 	In Input
 	CommandsMap map[string]func(args []string) error
 	World *World
+	LetterToDirection map[rune]Direction
 }
 
 type CommandParser struct{
@@ -28,8 +29,9 @@ type CommandParser struct{
 
 func (g *GameManager) Start() {
 	out := g.Out
-	out.Println("Nova Terram Viceris!")
+	out.Println(" - Novus Orbis - ")
 	g.InitializeCommandsMap()
+	g.SetUpDirectionMaps()
 	g.MainLoop()
 }
 
@@ -44,7 +46,7 @@ func (e *ExitCalled) Error() string {
 func (g *GameManager) InitializeCommandsMap() {
 	g.CommandsMap = make(map[string]func(args []string) error)
 	g.CommandsMap["exit"] = g.Exit
-	g.CommandsMap["x"] = g.Exit
+	g.CommandsMap["q"] = g.Exit
 	g.CommandsMap["commands"] = g.PrintCommands
 	g.CommandsMap["look"] = g.Look
 	g.CommandsMap["draw"] = g.DrawWorld
@@ -58,7 +60,6 @@ func (g *GameManager) MainLoop() {
 			break Loop
 		}
 	}
-	g.Out.Println("Exiting game. Goodbye!")
 }
 
 func (g *GameManager) DrawWorld(args []string) (err error) {
@@ -81,7 +82,7 @@ func (g *GameManager) Exit(args []string) (err error) {
 	out.Println("Are you sure you want to exit? (y/n)")
 	answer := strings.ToLower(in.Read())
 	if (answer[0] == 'y') {
-		out.Println("Thanks for playing!")
+		out.Println("Returning to reality.")
 		err = &ExitCalled{"A subroutine called exit"}
 	} else {
 		out.Println("Cancelled exit")

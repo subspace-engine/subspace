@@ -3,6 +3,7 @@ package game
 import (
 	"strings"
 	"bytes"
+	"fmt"
 )
 
 type World struct {
@@ -172,6 +173,25 @@ const (
 	RETRY
 )
 
+func  (g *GameManager) SetUpDirectionMaps() (err error) {
+
+	letterToDirection := map[rune]Direction{
+		'h':HERE,
+		'n':NORTH,
+		'e':EAST,
+		's':SOUTH,
+		'w':WEST,
+		'u':UP,
+		'd':DOWN,
+		'x':CANCEL,
+		'p':SHOW_POSSIBILITIES,
+	}
+	g.LetterToDirection = letterToDirection
+	err = nil
+	return
+}
+
+
 func (g *GameManager) Look(args []string) (err error) {
 	out := g.Out
 	in := g.In
@@ -241,28 +261,10 @@ func (g *GameManager) Look(args []string) (err error) {
 }
 
 func  (g *GameManager) GetDirection(dirString string) (dir Direction) {
-
 	dirChar := dirString[0]
-	switch dirChar {
-	case 'h':
-		dir = HERE
-	case 'n':
-		dir = NORTH
-	case 'e':
-		dir = EAST
-	case 's':
-		dir = SOUTH
-	case 'w':
-		dir = WEST
-	case 'u':
-		dir = UP
-	case 'd':
-		dir = DOWN
-	case 'x':
-		dir = CANCEL
-	case 'p':
-		dir = SHOW_POSSIBILITIES
-	default:
+	dir, isThere := g.LetterToDirection[rune(dirChar)]
+
+	if !isThere {
 		dir = RETRY
 	}
 	return

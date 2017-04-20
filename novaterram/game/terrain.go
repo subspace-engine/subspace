@@ -3,6 +3,8 @@ package game
 type Terrain struct {
 	size int
 	voxels [][][]TerrainType
+	TerrainToString map[TerrainType]string
+	TerrainToSymbol map[TerrainType]string
 }
 
 type TerrainType uint8
@@ -17,53 +19,41 @@ const (
 	UNKNOWN
 )
 
-func (t *Terrain) GetNameOfTerrainAt(p *Position) (terrainName string, err error) {
-	terrainType, err := t.GetTerrainTypeAt(p)
+func (t *Terrain) SetUpTerrainConversions() (err error) {
+	terrainToString := map[TerrainType]string{
+		SPACE : "space",
+		GAS : "gas",
+		SAND : "sand",
+		STONE : "stone",
+		ORE : "ore",
+		UNKNOWN : "unknown",
+	}
+
+	terrainToSymbol := map[TerrainType]string{
+		SPACE: ".",
+		GAS: "-",
+		SAND: "~",
+		STONE: "S",
+		ORE: "o",
+		UNKNOWN: "_",
+	}
+
+	t.TerrainToString = terrainToString
+	t.TerrainToSymbol = terrainToSymbol
 
 	err = nil
+	return
+}
 
-	switch terrainType {
-	case SPACE:
-		terrainName = "space"
-	case GAS:
-		terrainName = "gas"
-	case SAND:
-		terrainName = "sand"
-	case STONE:
-		terrainName = "stone"
-	case ORE:
-		terrainName = "ore"
-	case UNKNOWN:
-		terrainName = "unknown"
-	default:
-		terrainName = "wrong"
-		// TODO err
-	}
+func (t *Terrain) GetNameOfTerrainAt(p *Position) (terrainName string, err error) {
+	terrainType, err := t.GetTerrainTypeAt(p)
+	terrainName = t.TerrainToString[terrainType]
 	return
 }
 
 func (t *Terrain) GetSymbolOfTerrainAt(p *Position) (terrainChar string, err error) {
 	terrainType, err := t.GetTerrainTypeAt(p)
-
-	err = nil
-
-	switch terrainType {
-	case SPACE:
-		terrainChar = "."
-	case GAS:
-		terrainChar = "-"
-	case SAND:
-		terrainChar = "~"
-	case STONE:
-		terrainChar = "{"
-	case ORE:
-		terrainChar = "o"
-	case UNKNOWN:
-		terrainChar = "_"
-	default:
-		terrainChar = "??"
-		// TODO err = error("Unknown terrain type")
-	}
+	terrainChar = t.TerrainToSymbol[terrainType]
 	return
 }
 
@@ -91,7 +81,6 @@ func (w *World) GenerateTerrain() (err error) {
 				voxels[z][y][x] = STONE
 			}
 		}
-
 	}
 
 	for z := mid; z < size-1 ; z++ {
@@ -114,6 +103,7 @@ func (w *World) GenerateTerrain() (err error) {
 	voxels[mid+1][mid+1][mid-1] = STONE
 
 	terrain := &Terrain{size:size, voxels:voxels}
+	terrain.SetUpTerrainConversions()
 	w.Terrain = terrain
 	return nil
 }
