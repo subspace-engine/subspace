@@ -15,7 +15,7 @@ type World struct {
 }
 
 type ThingStore struct {
-	Things map[Position]*Thing
+	Things map[Position][]*Thing
 }
 
 type Thing struct {
@@ -37,17 +37,21 @@ type Colonist struct {
 }
 
 func (store *ThingStore) Initialize() {
-	store.Things = make(map[Position]*Thing)
+	store.Things = make(map[Position][]*Thing)
 }
 
-func (store *ThingStore) AtPosition(p *Position) (thing *Thing, isFound bool, err error) {
-	thing, isFound = store.Things[*p]
+func (store *ThingStore) AtPosition(p *Position) (things []*Thing, err error) {
+	things, _ = store.Things[*p]
 	err = nil
 	return
 }
 
 func (store *ThingStore) AddObjectAt(obj *Thing, p *Position) (err error) {
-	store.Things[*p] = obj
+	const DEFAULT_STORE_SIZE = 3
+	if store.Things[*p] == nil {
+		store.Things[*p] = make([]*Thing, 0, DEFAULT_STORE_SIZE)
+	}
+	store.Things[*p] = append(store.Things[*p], obj)
 	err = nil
 	return
 }
@@ -82,8 +86,8 @@ func (w *World) DrawnWorldAtZ(z int) (drawnWorld string, err error){
 
 func (w *World) GetSymbolOfWorldAt(p *Position) (worldChar string, err error) {
 	terrain := w.Terrain
-	_, isFound, _ := w.Things.AtPosition(p)
-	if (isFound) {
+	things, _ := w.Things.AtPosition(p)
+	if len(things) > 1 {
 		err = nil
 		worldChar = "X"
 	} else {
@@ -191,15 +195,14 @@ func (g *GameManager) Look(args []string) (err error) {
 
 	if (len(args) <= 1) {
 		for dir = RETRY ; (dir == RETRY); {
-			out.Println("In which direction would you like to look? ('x' to cancel or 'p' for possible directions)")
+			out.Println("In which direction would you like to look? ('c' to cancel or 'p' for possible directions)")
 			dirString := strings.ToLower(in.Read())
 			if (strings.HasPrefix(dirString, "look")) {
 				dirString = strings.TrimSpace(dirString[4:])
 			}
 			dir = g.GetDirection(dirString)
 			if (dir == RETRY) {
-				out.Println("I do not know what direction " + dirString + " is.")
-				out.Println("The possible directions are N, E, S, W")
+				out.Println("The possible directions are H, N, E, S, W, U, D")
 			}
 		}
 	} else {
@@ -207,30 +210,33 @@ func (g *GameManager) Look(args []string) (err error) {
 		dir = g.GetDirection(dirString)
 	}
 	var name1, name2 string
-	var objects []*Thing
+	var things []*Thing
 	var isClear bool
 
 	switch dir {
-	case HERE:
-		name1, name2, objects, isClear, _ = world.GetNamesOfTerrainsAndObjects(Position{0,0,0})
-	case NORTH:
-		name1, name2, objects, isClear, _ = world.GetNamesOfTerrainsAndObjects(Position{0,1,0})
-	case EAST:
-		name1, name2, objects, isClear, _ = world.GetNamesOfTerrainsAndObjects(Position{1,0,0})
-	case SOUTH:
-		name1, name2, objects, isClear, _ = world.GetNamesOfTerrainsAndObjects(Position{0,-1,0})
-	case WEST:
-		name1, name2, objects, isClear, _ = world.GetNamesOfTerrainsAndObjects(Position{-1,0,0})
-	case UP:
-		name1, name2, objects, isClear, _ = world.GetNamesOfTerrainsAndObjects(Position{0,0,1})
-	case DOWN:
-		name1, name2, objects, isClear, _ = world.GetNamesOfTerrainsAndObjects(Position{0,0,-1})
 	case SHOW_POSSIBILITIES:
-		out.Println("The possible directions are H, N, E, S, W, U, D, C")
+		out.Println("The possible directions are H, N, E, S, W, U, D")
+		return
 	case CANCEL:
-		out.Println("You cancelled looking")
+		out.Println("Cancelled looking")
+		return
+	case HERE:
+		name1, name2, things, isClear, _ = world.GetNamesOfTerrainsAndObjects(Position{0,0,0})
+	case NORTH:
+		name1, name2, things, isClear, _ = world.GetNamesOfTerrainsAndObjects(Position{0,1,0})
+	case EAST:
+		name1, name2, things, isClear, _ = world.GetNamesOfTerrainsAndObjects(Position{1,0,0})
+	case SOUTH:
+		name1, name2, things, isClear, _ = world.GetNamesOfTerrainsAndObjects(Position{0,-1,0})
+	case WEST:
+		name1, name2, things, isClear, _ = world.GetNamesOfTerrainsAndObjects(Position{-1,0,0})
+	case UP:
+		name1, name2, things, isClear, _ = world.GetNamesOfTerrainsAndObjects(Position{0,0,1})
+	case DOWN:
+		name1, name2, things, isClear, _ = world.GetNamesOfTerrainsAndObjects(Position{0,0,-1})
 	default:
-		out.Println("I don't know which way you looked")
+		out.Println("The possible directions are H, N, E, S, W, U, D,")
+		return
 	}
 
 	dirName := g.DirectionToString[dir]
@@ -241,8 +247,8 @@ func (g *GameManager) Look(args []string) (err error) {
 		middleString =  " above " + name2
 	}
 
-	if (objects != nil) {
-		endString = " with " + objects[0].Name
+	if (things != nil) && (len(things) > 0) {
+		endString = " with: " + things[0].Name
 	}
 
 	out.Println(dirName  + " is " + name1 + middleString + endString + ".")
@@ -252,7 +258,7 @@ func (g *GameManager) Look(args []string) (err error) {
 
 func (w *World) GetNamesOfTerrainsAndObjects(relPos Position) (name1 string,
 		name2 string,
-		objects []*Thing,
+		things []*Thing,
 		isClear bool,
 		err error) {
 	pos, _ := w.Cursor.RelativePosition(relPos.x, relPos.y, relPos.z)
@@ -260,19 +266,11 @@ func (w *World) GetNamesOfTerrainsAndObjects(relPos Position) (name1 string,
 	name1, _ = w.Terrain.GetNameOfTerrainAt(pos)
 	isClear = (w.Terrain.TerrainToOpacity[terrainType] == CLEAR)
 
-	obj, isFound, _ := w.Things.AtPosition(pos)
+	things, _ = w.Things.AtPosition(pos)
 
 	if (isClear) {
 		pos, _ = pos.RelativePosition(0, 0, -1)
 		name2, _ = w.Terrain.GetNameOfTerrainAt(pos)
-	}
-
-	if (isFound) {
-		objects = []*Thing{
-			obj,
-		}
-	} else {
-		objects = nil
 	}
 
 	err = nil

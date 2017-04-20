@@ -11,7 +11,6 @@ type Terrain struct {
 type TerrainType uint8
 type TerrainOpacity bool
 
-
 const (
 	SPACE TerrainType = iota
 	GAS
