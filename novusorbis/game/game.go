@@ -21,6 +21,7 @@ type GameManager struct{
 	CommandsMap map[string]func(args []string) error
 	World *World
 	LetterToDirection map[rune]Direction
+	DirectionToString map[Direction]string
 }
 
 type CommandParser struct{

@@ -5,9 +5,11 @@ type Terrain struct {
 	voxels [][][]TerrainType
 	TerrainToString map[TerrainType]string
 	TerrainToSymbol map[TerrainType]string
+	TerrainToOpacity map[TerrainType]TerrainOpacity
 }
 
 type TerrainType uint8
+type TerrainOpacity bool
 
 
 const (
@@ -19,27 +21,23 @@ const (
 	UNKNOWN
 )
 
+const (
+	OPAQUE TerrainOpacity = true
+	CLEAR = false
+)
+
 func (t *Terrain) SetUpTerrainConversions() (err error) {
-	terrainToString := map[TerrainType]string{
-		SPACE : "space",
-		GAS : "gas",
-		SAND : "sand",
-		STONE : "stone",
-		ORE : "ore",
-		UNKNOWN : "unknown",
-	}
-
-	terrainToSymbol := map[TerrainType]string{
-		SPACE: ".",
-		GAS: "-",
-		SAND: "~",
-		STONE: "S",
-		ORE: "o",
-		UNKNOWN: "_",
-	}
-
+	terrainToString := map[TerrainType]string{SPACE : "space",GAS : "gas",SAND : "sand",
+		STONE : "stone",ORE : "ore",UNKNOWN : "unknown"}
 	t.TerrainToString = terrainToString
+
+	terrainToSymbol := map[TerrainType]string{SPACE: ".",GAS: "-",SAND: "~",
+		STONE: "S",ORE: "o",UNKNOWN: "_"}
 	t.TerrainToSymbol = terrainToSymbol
+
+	terrainToOpacity := map[TerrainType]TerrainOpacity{SPACE: CLEAR, GAS: CLEAR, SAND: OPAQUE,
+		STONE: OPAQUE, ORE: OPAQUE, UNKNOWN: OPAQUE}
+	t.TerrainToOpacity = terrainToOpacity
 
 	err = nil
 	return
