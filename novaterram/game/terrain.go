@@ -1,13 +1,8 @@
 package game
 
-import (
-	"bytes"
-	"fmt"
-)
-
 type Terrain struct {
 	size int
-	voxels [5][5][5]TerrainType
+	voxels [][][]TerrainType
 }
 
 type TerrainType uint8
@@ -19,6 +14,7 @@ const (
 	SAND
 	STONE
 	ORE
+	UNKNOWN
 )
 
 func (t *Terrain) GetNameOfTerrainAt(p *Position) (terrainName string, err error) {
@@ -37,78 +33,71 @@ func (t *Terrain) GetNameOfTerrainAt(p *Position) (terrainName string, err error
 		terrainName = "stone"
 	case ORE:
 		terrainName = "ore"
+	case UNKNOWN:
+		terrainName = "unknown"
 	default:
-		terrainName = "Unknown"
+		terrainName = "wrong"
 		// TODO err
 	}
 	return
 }
 
-func (t *Terrain) GetSymbolOfTerrainAt(p *Position) (terrainName string, err error) {
+func (t *Terrain) GetSymbolOfTerrainAt(p *Position) (terrainChar string, err error) {
 	terrainType, err := t.GetTerrainTypeAt(p)
 
 	err = nil
 
 	switch terrainType {
 	case SPACE:
-		terrainName = "_"
+		terrainChar = "."
 	case GAS:
-		terrainName = "."
+		terrainChar = "-"
 	case SAND:
-		terrainName = "="
+		terrainChar = "~"
 	case STONE:
-		terrainName = "+"
+		terrainChar = "{"
 	case ORE:
-		terrainName = "o"
+		terrainChar = "o"
+	case UNKNOWN:
+		terrainChar = "_"
 	default:
-		terrainName = "?"
+		terrainChar = "??"
 		// TODO err = error("Unknown terrain type")
 	}
 	return
 }
 
-func (t *Terrain) DrawnTerrainAtZ(z int) (drawnTerrain string, err error){
-	size := t.size
-	err = nil
-	var byteTerrain bytes.Buffer
-
-	fmt.Println("DrawnTerrainAt Z: ", z)
-
-	for y:=0; y < size; y++ {
-		for x := 0; x < size; x++ {
-			symbol, _ := t.GetSymbolOfTerrainAt(&Position{x,y,z})
-			byteTerrain.WriteString(symbol)
-		}
-		byteTerrain.WriteString("\n")
-	}
-
-	drawnTerrain = byteTerrain.String()
-	return
-}
-
 func (t *Terrain) GetTerrainTypeAt(p *Position) (terrainType TerrainType, err error) {
-	terrainType = t.voxels[p.x][p.y][p.z]
+	terrainType = t.voxels[p.z][p.y][p.x]
 	err = nil
 	return
 }
 
 func (w *World) GenerateTerrain() (err error) {
-	const size = 5
+	var size = w.Size
 	mid := size/2
-	voxels := [size][size][size]TerrainType{}
+	voxels := make([][][]TerrainType, size)
+	for z := 0; z < size; z++ {
+		voxels[z] = make([][]TerrainType, size)
+		for y := 0; y < size; y++ {
+			voxels[z][y] = make([]TerrainType, size)
+		}
+	}
+
 
 	for z := 0; z < mid ; z++ {
 		for x := 0; x < size; x++ {
 			for y:=0; y < size; y++ {
-				voxels[x][y][z] = SAND
+				voxels[z][y][x] = STONE
 			}
 		}
+
 	}
 
 	for z := mid; z < size-1 ; z++ {
 		for x := 0; x < size; x++ {
 			for y:=0; y < size; y++ {
-				voxels[x][y][z] = GAS
+				voxels[z][y][x] = GAS
 			}
 		}
 	}
@@ -116,14 +105,13 @@ func (w *World) GenerateTerrain() (err error) {
 	for z := size-1; z < size ; z++ {
 		for x := 0; x < size; x++ {
 			for y:=0; y < size; y++ {
-				voxels[x][y][z] = SPACE
+				voxels[z][y][x] = SPACE
 			}
 		}
 	}
 
-	voxels[mid+1][mid][mid] = STONE
+	voxels[mid][mid][mid+1] = STONE
 	voxels[mid+1][mid+1][mid-1] = STONE
-
 
 	terrain := &Terrain{size:size, voxels:voxels}
 	w.Terrain = terrain

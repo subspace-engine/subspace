@@ -2,11 +2,13 @@ package game
 
 import (
 	"strings"
+	"bytes"
 )
 
 type World struct {
 	MainColonist *Colonist
 	MainBase *Base
+	Size int
 	Terrain *Terrain
 	Objects *ObjectStore
 	Cursor *Position
@@ -57,18 +59,56 @@ func (inPos *Position) RelativePosition(x int, y int, z int) (outPos *Position, 
 	return
 }
 
+func (w *World) DrawnWorldAtZ(z int) (drawnWorld string, err error){
+	size := w.Size
+	err = nil
+	var byteWorld bytes.Buffer
+
+	if z >= size || z < 0 {
+		drawnWorld = "z value out of range\n"
+		return
+	}
+
+	for y:=0; y < size; y++ {
+		for x := 0; x < size; x++ {
+			symbol, _ := w.GetSymbolOfWorldAt(&Position{x,y,z})
+			byteWorld.WriteString(symbol)
+		}
+		byteWorld.WriteString("\n")
+	}
+
+	drawnWorld = byteWorld.String()
+	return
+}
+
+func (w *World) GetSymbolOfWorldAt(p *Position) (worldChar string, err error) {
+	terrain := w.Terrain
+	_, isFound, _ := w.Objects.AtPosition(p)
+	if (isFound) {
+		err = nil
+		worldChar = "X"
+	} else {
+		worldChar, err = terrain.GetSymbolOfTerrainAt(p)
+	}
+
+	return
+}
+
+
 func (g *GameManager) CreateWorld() (err error) {
 	w := &World{}
+	w.Size = 5
 	g.World = w
+	mid := w.Size/2
 
-	c := &Position{2,2,2} // TODO Proper sizes
+	c := &Position{mid,mid,mid} // TODO Proper sizes
 	w.Cursor = c
 
 	store := &ObjectStore{}
 	store.Initialize()
 	w.Objects = store
 
-	pos := &Position{2,2,2}
+	pos := &Position{mid,mid,mid}
 	obj := &GameObject{"Random Object"}
 	store.AddObjectAt(obj, pos)
 
@@ -157,8 +197,10 @@ func (g *GameManager) Look(args []string) (err error) {
 
 	switch dir {
 	case HERE:
-		name, _ := g.World.Terrain.GetNameOfTerrainAt(g.World.Cursor)
-		out.Println("Here you see " + name)
+		name1, _ := g.World.Terrain.GetNameOfTerrainAt(g.World.Cursor)
+		pos, _ := g.World.Cursor.RelativePosition(0,0,-1)
+		name2, _ := g.World.Terrain.GetNameOfTerrainAt(pos)
+		out.Println("Here you see " + name1 + " above " + name2)
 		obj, isFound, _ := g.World.Objects.AtPosition(g.World.Cursor)
 		if (isFound) {
 			out.Println("Here there is also " + obj.Name)

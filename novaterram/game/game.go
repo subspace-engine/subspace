@@ -47,7 +47,7 @@ func (g *GameManager) InitializeCommandsMap() {
 	g.CommandsMap["x"] = g.Exit
 	g.CommandsMap["commands"] = g.PrintCommands
 	g.CommandsMap["look"] = g.Look
-	g.CommandsMap["terrain"] = g.DrawTerrain
+	g.CommandsMap["draw"] = g.DrawWorld
 }
 
 func (g *GameManager) MainLoop() {
@@ -61,15 +61,15 @@ func (g *GameManager) MainLoop() {
 	g.Out.Println("Exiting game. Goodbye!")
 }
 
-func (g *GameManager) DrawTerrain(args []string) (err error) {
-	z := 2
+func (g *GameManager) DrawWorld(args []string) (err error) {
+	z := g.World.Size/2
 	if (len(args) > 1) {
 		z, err = strconv.Atoi(strings.TrimSpace(args[1]))
 	}
 	out := g.Out
 
 	out.Println("Drawing terrain")
-	drawnTerrain, _ := g.World.Terrain.DrawnTerrainAtZ(z)
+	drawnTerrain, _ := g.World.DrawnWorldAtZ(z)
 	out.Print(drawnTerrain)
 	return nil
 }
