@@ -3,7 +3,6 @@ package game
 import (
 	"strings"
 	"bytes"
-	"fmt"
 )
 
 type World struct {
