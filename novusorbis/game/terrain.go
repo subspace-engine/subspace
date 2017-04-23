@@ -45,20 +45,20 @@ func (t *Terrain) SetUpTerrainConversions() (err error) {
 	return
 }
 
-func (t *Terrain) GetNameOfTerrainAt(p *Position) (terrainName string, err error) {
+func (t *Terrain) GetNameOfTerrainAt(p Point) (terrainName string, err error) {
 	terrainType, err := t.GetTerrainTypeAt(p)
 	terrainName = t.TerrainToString[terrainType]
 	return
 }
 
-func (t *Terrain) GetSymbolOfTerrainAt(p *Position) (terrainChar string, err error) {
+func (t *Terrain) GetSymbolOfTerrainAt(p Point) (terrainChar string, err error) {
 	terrainType, err := t.GetTerrainTypeAt(p)
 	terrainChar = t.TerrainToSymbol[terrainType]
 	return
 }
 
-func (t *Terrain) GetTerrainTypeAt(p *Position) (terrainType TerrainType, err error) {
-	terrainType = t.voxels[p.z][p.y][p.x]
+func (t *Terrain) GetTerrainTypeAt(p Point) (terrainType TerrainType, err error) {
+	terrainType = t.voxels[p.X][p.Y][p.Z]
 	err = nil
 	return
 }
@@ -99,8 +99,8 @@ func (w *World) GenerateTerrain() (err error) {
 		}
 	}
 
-	voxels[mid][mid][mid+1] = STONE
-	voxels[mid+1][mid+1][mid-1] = STONE
+	// voxels[mid][mid][mid+1] = STONE
+	// voxels[mid+1][mid+1][mid-1] = STONE
 
 	terrain := &Terrain{size:size, voxels:voxels}
 	terrain.SetUpTerrainConversions()

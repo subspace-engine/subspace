@@ -1,12 +1,14 @@
 package model
 
+type FPoint struct {
+	X float64
+	Y float64
+	Z float64
+}
+
 type Mover interface {
-	X() float64
-	Y() float64
-	Z() float64
-	SetX(float64)
-	SetY(float64)
-	SetZ(float64)
+	Pos() FPoint
+	SetPos(pos FPoint)
 }
 
 type Namer interface {
@@ -26,11 +28,11 @@ type Point struct {
 }
 
 type Space interface {
-	Move(mover Mover, x float64, y float64, z float64) int
 	GetTile(mover Mover) Tile
 	SetTile(pos Point, tile Tile)
-	Encloses(pos Point) bool
-	AddObject(pos Point, mover Mover)
+	Encloses(tilePos Point, objPos FPoint) bool
+	AddObject(pos FPoint, mover Mover)
+	MoveObject(mover Mover, pos FPoint) int
 }
 
 type TileType int
