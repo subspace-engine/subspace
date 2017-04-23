@@ -21,11 +21,11 @@ func (point *Point2d) SetY(y float64) {
 	point.y = y
 }
 
-func (point Point2d) Z() {
+func (point Point2d) Z() float64 {
 	return 0
 }
 
-func (point *Point3d) SetZ() {
+func (point *Point2d) SetZ() {
 }
 
 type Point3d struct {

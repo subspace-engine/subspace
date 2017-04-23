@@ -14,10 +14,11 @@ type Point interface {
 type Tile interface {
 	Type() int
 	IsPassable() bool
+	String() string
 }
 
 type Space interface {
-	Move(mover model.Mover, x float64, y float64, z float64)
+	Move(mover model.Mover, x float64, y float64, z float64) int
 	GetTile(mover model.Mover) Tile
 	SetTile(x int, y int, z int, tile Tile)
 	Encloses(x int, y int, z int) bool

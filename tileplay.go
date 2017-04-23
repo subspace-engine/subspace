@@ -40,16 +40,16 @@ me.SetX(50)
 				fmt.Printf("%f, %f, %f\n",me.X(), me.Y(), me.Z())
 			case termbox.KeyArrowUp:
 				tiles.Move(&me, 0, 0, -1)
-				fmt.Println(tiles.GetTile(&me).(world.BasicTile).Type.Text())
+				fmt.Println(tiles.GetTile(&me))
 							case termbox.KeyArrowDown:
 				tiles.Move(&me,0,0,1)
-				fmt.Println(tiles.GetTile(&me).(world.BasicTile).Type.Text())
+				fmt.Println(tiles.GetTile(&me))
 			case termbox.KeyArrowLeft:
 				tiles.Move(&me,-1,0,0)
-				fmt.Println(tiles.GetTile(&me).(world.BasicTile).Type.Text())
+				fmt.Println(tiles.GetTile(&me))
 			case termbox.KeyArrowRight:
 				tiles.Move(&me,1,0,0)
-				fmt.Println(tiles.GetTile(&me).(world.BasicTile).Type.Text())
+				fmt.Println(tiles.GetTile(&me))
 			}
 		}
 

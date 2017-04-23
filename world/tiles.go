@@ -2,10 +2,8 @@ package world
 
 import "github.com/subspace-engine/subspace/world/model"
 
-type TileType int
-
 const (
-	Nothing TileType = iota
+	Nothing = iota
 	Empty
 	Wall
 	Floor
@@ -13,16 +11,11 @@ const (
 	LastType
 )
 
-func (self TileType) Text() string {
-	var texts = []string{"Nothing", "Empty", "Wall", "Floor", "Ground"}
-	return texts[self]
-}
-
 type BasicTile struct {
-	type TileType
+	tileType int
 }
 
-func MakeBasicTile(tileType TileType) Tile {
+func MakeBasicTile(tileType int) Tile {
 	return BasicTile{tileType}
 }
 
@@ -30,8 +23,13 @@ func (self BasicTile) IsPassable() bool {
 	return self.Type() != Wall && self.Type() != Nothing
 }
 
-func (tile BasicTile)Type() {
-	return tile.Type
+func (tile BasicTile)Type() int {
+	return tile.tileType
+}
+
+func (tile BasicTile)String() string {
+	types := []string {"nothing", "empty", "wall", "floor", "ground"}
+	return types[tile.Type()]
 }
 
 type Tiles [][][]Tile
@@ -73,12 +71,12 @@ func MakeMovers(width int, height int, depth int) Movers {
 }
 
 func MakeBasicSpace(width int, height int, depth int, size float64, moverMul int, tile Tile) Space {
-	space := Space{MakeTiles(width, height, depth, tile), MakeMovers(width/moverMul, height/moverMul, depth/moverMul), size, moverMul}
+	space := BasicSpace{MakeTiles(width, height, depth, tile), MakeMovers(width/moverMul, height/moverMul, depth/moverMul), size, moverMul}
 	return space
 }
 
 func MakeDefaultSpace(width int, height int, depth int) Space {
-	return MakeSpace(width, height, depth, 1.0, 10, MakeBasicTile(Nothing))
+	return MakeBasicSpace(width, height, depth, 1.0, 10, MakeBasicTile(Nothing))
 }
 
 func (self Movers) remove(x int, y int, z int, mover model.Mover) {
@@ -99,7 +97,7 @@ func (self Movers) add(x int, y int, z int, mover model.Mover) {
 	self[x][y][z] = append(self[x][y][z], mover)
 }
 
-func (self *BasicSpace) Move(mover model.Mover, x float64, y float64, z float64) int {
+func (self BasicSpace) Move(mover model.Mover, x float64, y float64, z float64) int {
 	tx := int(mover.X() / self.TileSize)
 	ty := int(mover.Y() / self.TileSize)
 	tz := int(mover.Z() / self.TileSize)
