@@ -2,10 +2,11 @@ package world
 
 import "github.com/subspace-engine/subspace/world/model"
 
-type TileType int
+
+type TileType model.TileType
 
 const (
-	Nothing TileType = iota
+	Nothing model.TileType = iota
 	Empty
 	Wall
 	Floor
@@ -18,15 +19,11 @@ func (self TileType) Text() string {
 	return texts[self]
 }
 
-type Tile interface {
-	IsPassable() bool
-}
-
 type BasicTile struct {
-	Type TileType
+	Type model.TileType
 }
 
-func MakeBasicTile(tileType TileType) Tile {
+func MakeBasicTile(tileType model.TileType) model.Tile {
 	return BasicTile{tileType}
 }
 
@@ -34,7 +31,11 @@ func (self BasicTile) IsPassable() bool {
 	return self.Type != Wall && self.Type != Nothing
 }
 
-type Tiles [][][]Tile
+func (self BasicTile) GetType() model.TileType {
+	return self.Type
+}
+
+type Tiles [][][]model.Tile
 type Movers [][][][]model.Mover
 
 type BasicSpace struct {
@@ -44,12 +45,12 @@ type BasicSpace struct {
 	moverMul int
 }
 
-func MakeTiles(width int, height int, depth int, tile Tile) Tiles {
-	tiles := make([][][]Tile, width)
+func MakeTiles(width int, height int, depth int, tile model.Tile ) Tiles {
+	tiles := make([][][]model.Tile , width)
 	for i := 0; i < width; i++ {
-		tiles[i] = make([][]Tile, height)
+		tiles[i] = make([][]model.Tile , height)
 		for j := 0; j < height; j++ {
-			tiles[i][j] = make([]Tile, depth)
+			tiles[i][j] = make([]model.Tile , depth)
 			for k := 0; k < depth; k++ {
 				tiles[i][j][k] = tile
 			}
@@ -72,13 +73,13 @@ func MakeMovers(width int, height int, depth int) Movers {
 	return movers
 }
 
-func MakeBasicSpace(width int, height int, depth int, size float64, moverMul int, tile Tile) Space {
-	space := Space{MakeTiles(width, height, depth, tile), MakeMovers(width/moverMul, height/moverMul, depth/moverMul), size, moverMul}
+func MakeBasicSpace(width int, height int, depth int, size float64, moverMul int, tile model.Tile ) model.Space {
+	space := &BasicSpace{MakeTiles(width, height, depth, tile), MakeMovers(width/moverMul, height/moverMul, depth/moverMul), size, moverMul}
 	return space
 }
 
-func MakeDefaultSpace(width int, height int, depth int) Space {
-	return MakeSpace(width, height, depth, 1.0, 10, MakeBasicTile(Nothing))
+func MakeDefaultSpace(width int, height int, depth int) model.Space {
+	return MakeBasicSpace(width, height, depth, 1.0, 10, MakeBasicTile(Nothing))
 }
 
 func (self Movers) remove(x int, y int, z int, mover model.Mover) {
@@ -106,7 +107,7 @@ func (self *BasicSpace) Move(mover model.Mover, x float64, y float64, z float64)
 	nx := int((mover.X() + x) / self.TileSize)
 	ny := int((mover.Y() + y) / self.TileSize)
 	nz := int((mover.Z() + z) / self.TileSize)
-	if self.Encloses(nx, ny, nz) {
+	if self.Encloses(model.Point{nx, ny, nz}) {
 		if self.tiles[nx][ny][nz].IsPassable() {
 			self.shiftMover(mover, tx, ty, tz, nx, ny, nz)
 			mover.SetX(mover.X() + x)
@@ -117,6 +118,7 @@ func (self *BasicSpace) Move(mover model.Mover, x float64, y float64, z float64)
 		return 1
 	}
 	return -1
+	// What ???
 }
 
 func (self *BasicSpace) shiftMover(mover model.Mover, x int, y int, z int, newX int, newY int, newZ int) {
@@ -127,28 +129,20 @@ func (self *BasicSpace) shiftMover(mover model.Mover, x int, y int, z int, newX 
 	}
 }
 
-func (self BasicSpace) GetTile(mover model.Mover) Tile {
+func (self *BasicSpace) GetTile(mover model.Mover) model.Tile  {
 	return self.tiles[int(mover.X()/self.TileSize)][int(mover.Y()/self.TileSize)][int(mover.Z()/self.TileSize)]
 }
 
-func (self BasicSpace) SetTile(x int, y int, z int, tile Tile) {
-	self.tiles[x][y][z] = tile
+func (self *BasicSpace) SetTile(pt model.Point, tile model.Tile ) {
+	self.tiles[pt.X][pt.Y][pt.Z] = tile
 }
 
-func (self BasicSpace) Encloses(x int, y int, z int) bool {
-	return x >= 0 && x < len(self.tiles) && y >= 0 && y < len(self.tiles[x]) && z >= 0 && z < len(self.tiles[x][y])
+func (self *BasicSpace) Encloses(pt model.Point) bool {
+	return pt.X >= 0 && pt.X < len(self.tiles) && pt.Y >= 0 &&  pt.Y < len(self.tiles[pt.X]) && pt.Z >= 0 &&  pt.Z < len(self.tiles[pt.X][pt.Y])
 }
 
-func (self BasicSpace) Add(x int, y int, z int, mover model.Mover) {
-	if self.Encloses(x, y, z) {
-		self.movers.add(x/self.moverMul, y/self.moverMul, z/self.moverMul, mover)
+func (self *BasicSpace) AddObject(pt model.Point, mover model.Mover) {
+	if self.Encloses(pt) {
+		self.movers.add(pt.X/self.moverMul, pt.Y/self.moverMul, pt.Z/self.moverMul, mover)
 	}
-}
-
-type Space interface {
-	Move(mover model.Mover, x float64, y float64, z float64)
-	GetTile(mover model.Mover) Tile
-	SetTile(x int, y int, z int, tile Tile)
-	Encloses(x int, y int, z int) bool
-	Add(x int, y int, z int, mover model.Mover)
 }

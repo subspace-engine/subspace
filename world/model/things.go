@@ -6,8 +6,7 @@ type MoveObj struct {
 	z float64
 }
 
-
-func    (self *MoveObj)X() float64 {
+func (self *MoveObj)X() float64 {
 	return self.x
 }
 
@@ -30,7 +29,6 @@ func (self*MoveObj)SetY(y float64) {
 func (self*MoveObj)SetZ(z float64) {
 	self.z=z
 }
-
 
 type Thing struct {
 	MoveObj

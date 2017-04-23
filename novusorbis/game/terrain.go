@@ -1,5 +1,8 @@
 package game
 
+import "github.com/subspace-engine/subspace/world/model"
+
+
 type Terrain struct {
 	size int
 	voxels [][][]TerrainType
@@ -8,7 +11,7 @@ type Terrain struct {
 	TerrainToOpacity map[TerrainType]TerrainOpacity
 }
 
-type TerrainType uint8
+type TerrainType model.TileType
 type TerrainOpacity bool
 
 const (
