@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package engine;
+
+// actions taken by a client
+message  Action {
+	string desc=1; //simple as possible for now
+}
+
+message ServerUpdate {
+	string desc=1; //simple as possible for now
+}
+
+service MessageStream {
+	rpc UpdateStream(stream Action) returns(stream ServerUpdate) {}
+}

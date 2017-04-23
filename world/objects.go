@@ -25,48 +25,47 @@ type Shape interface {
 	MinY() float64
 	MinZ() float64
 	IsTouching(othr Shape) bool
-	
 }
 
 type Box struct {
-	x float64
-	y float64
-	z float64
-	width float64
+	x      float64
+	y      float64
+	z      float64
+	width  float64
 	height float64
-	depth float64
+	depth  float64
 }
 
 func NewBox(x float64, y float64, z float64, width float64, height float64, depth float64) Box {
 	return Box{x, y, z, width, height, depth}
 }
 
-func (b Box)MinX() float64 {
+func (b Box) MinX() float64 {
 	return b.x
 }
 
-func (b Box)MinY() float64 {
+func (b Box) MinY() float64 {
 	return b.y
 }
 
-func (b Box)MinZ() float64 {
+func (b Box) MinZ() float64 {
 	return b.z
 }
 
-func (b Box)MaxX() float64 {
-	return b.x+b.width
+func (b Box) MaxX() float64 {
+	return b.x + b.width
 }
 
-func (b Box)MaxY() float64 {
-	return b.y+b.height
+func (b Box) MaxY() float64 {
+	return b.y + b.height
 }
 
-func (b Box)MaxZ() float64 {
-	return b.z+b.depth
+func (b Box) MaxZ() float64 {
+	return b.z + b.depth
 }
 
-func (b Box)IsTouching(othr Shape) bool {
-	return !((b.MinX()>othr.MaxX()||b.MaxX()<othr.MinX())&&(b.MinY()>othr.MaxY()||b.MaxY()<othr.MinY())&&(b.MinZ()>othr.MaxZ()||b.MaxZ()<othr.MinZ()))
+func (b Box) IsTouching(othr Shape) bool {
+	return !((b.MinX() > othr.MaxX() || b.MaxX() < othr.MinX()) && (b.MinY() > othr.MaxY() || b.MaxY() < othr.MinY()) && (b.MinZ() > othr.MaxZ() || b.MaxZ() < othr.MinZ()))
 }
 
 type WObject struct {
@@ -81,7 +80,7 @@ func NewWObject(name string, shape Shape) WObject {
 	return obj
 }
 
-func (obj WObject)RelatedTo(child *WObject) bool {
+func (obj WObject) RelatedTo(child *WObject) bool {
 	for _, val := range obj.Relations {
 		if val == child {
 			return true
@@ -90,15 +89,15 @@ func (obj WObject)RelatedTo(child *WObject) bool {
 	return false
 }
 
-func (obj Object)Name() string {
+func (obj Object) Name() string {
 	return obj["name"].(string)
 }
 
-func (obj Object)SetName(name string) {
+func (obj Object) SetName(name string) {
 	obj["name"] = name
 }
 
-func (obj WObject)PutIn(container WObject) {
-	obj.Relations["in"]=&container
-	container.Relations["contains"]=&obj
+func (obj WObject) PutIn(container WObject) {
+	obj.Relations["in"] = &container
+	container.Relations["contains"] = &obj
 }
