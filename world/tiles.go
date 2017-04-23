@@ -18,12 +18,8 @@ func (self TileType) Text() string {
 	return texts[self]
 }
 
-type Tile interface {
-	IsPassable() bool
-}
-
 type BasicTile struct {
-	Type TileType
+	type TileType
 }
 
 func MakeBasicTile(tileType TileType) Tile {
@@ -31,7 +27,11 @@ func MakeBasicTile(tileType TileType) Tile {
 }
 
 func (self BasicTile) IsPassable() bool {
-	return self.Type != Wall && self.Type != Nothing
+	return self.Type() != Wall && self.Type() != Nothing
+}
+
+func (tile BasicTile)Type() {
+	return tile.Type
 }
 
 type Tiles [][][]Tile
@@ -143,12 +143,4 @@ func (self BasicSpace) Add(x int, y int, z int, mover model.Mover) {
 	if self.Encloses(x, y, z) {
 		self.movers.add(x/self.moverMul, y/self.moverMul, z/self.moverMul, mover)
 	}
-}
-
-type Space interface {
-	Move(mover model.Mover, x float64, y float64, z float64)
-	GetTile(mover model.Mover) Tile
-	SetTile(x int, y int, z int, tile Tile)
-	Encloses(x int, y int, z int) bool
-	Add(x int, y int, z int, mover model.Mover)
 }
