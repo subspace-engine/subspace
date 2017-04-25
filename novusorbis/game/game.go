@@ -33,7 +33,6 @@ func (g *GameManager) Start() {
 	out.Println(" - Novus Orbis - ")
 	g.InitializeCommandsMap()
 	g.SetUpDirectionMaps()
-	g.StartNewGame()
 	g.MainLoop()
 }
 
@@ -55,6 +54,7 @@ func (g *GameManager) InitializeCommandsMap() {
 }
 
 func (g *GameManager) MainLoop() {
+	g.StartNewGame()
 	Loop:
 	for {
 		if doExit := g.LoopStep() ; doExit != nil {
