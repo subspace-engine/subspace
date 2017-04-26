@@ -13,10 +13,13 @@ type TerrainOpacity bool
 
 const (
 	SPACE TerrainType = iota
+	SMOKE
 	GAS
 	SAND
 	STONE
-	ORE
+	OPEN_STRUCTURE
+	AIRTIGHT_STRUCTURE
+	SOLID_STRUCTURE
 	UNKNOWN
 )
 
@@ -27,15 +30,15 @@ const (
 
 func (t *Terrain) SetUpTerrainConversions() (err error) {
 	terrainToString := map[TerrainType]string{SPACE : "space",GAS : "gas",SAND : "sand",
-		STONE : "stone",ORE : "ore",UNKNOWN : "unknown"}
+		STONE : "stone", OPEN_STRUCTURE : "ore",UNKNOWN : "unknown"}
 	t.TerrainToString = terrainToString
 
 	terrainToSymbol := map[TerrainType]string{SPACE: ".",GAS: "-",SAND: "~",
-		STONE: "S",ORE: "o",UNKNOWN: "_"}
+		STONE: "S", OPEN_STRUCTURE: "o",UNKNOWN: "_"}
 	t.TerrainToSymbol = terrainToSymbol
 
 	terrainToOpacity := map[TerrainType]TerrainOpacity{SPACE: CLEAR, GAS: CLEAR, SAND: OPAQUE,
-		STONE: OPAQUE, ORE: OPAQUE, UNKNOWN: OPAQUE}
+		STONE: OPAQUE,  OPEN_STRUCTURE: OPAQUE, UNKNOWN: OPAQUE}
 	t.TerrainToOpacity = terrainToOpacity
 
 	err = nil

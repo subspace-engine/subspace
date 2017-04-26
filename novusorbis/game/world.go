@@ -10,7 +10,7 @@ type World struct {
 	MainBase     *Base
 	Size         int
 	Terrain      *Terrain
-	Things       *ThingStore
+	Things       *MapThingStore
 	Cursor       Position
 }
 
@@ -26,7 +26,7 @@ type Base struct {
 
 type Colonist struct {
 	Name string
-	Avatar *Thing
+	Avatar Thing
 }
 
 func (inPos *Position) RelativePosition(x int, y int, z int) (outPos Position, err error) {
@@ -62,7 +62,7 @@ func (w *World) GetSymbolOfWorldAt(p Position) (worldChar string, err error) {
 	things, _ := w.Things.AtPosition(p)
 	if len(things) > 0 {
 		err = nil
-		worldChar = things[0].Symbol
+		worldChar = things[0].Symbol()
 	} else {
 		worldChar, err = terrain.GetSymbolOfTerrainAt(p)
 	}
@@ -81,7 +81,7 @@ func (g *GameManager) CreateWorld() (err error) {
 
 	w.GenerateTerrain()
 
-	store := &ThingStore{}
+	store := &MapThingStore{}
 	store.Initialize()
 	w.Things = store
 
@@ -90,7 +90,7 @@ func (g *GameManager) CreateWorld() (err error) {
 
 	pos := Position{mid,mid,mid}
 	obj := g.World.MainColonist.Avatar
-	obj.Position = pos
+	obj.SetPosition(pos)
 	store.AddObjectAt(obj, pos)
 
 	err = nil
@@ -103,7 +103,7 @@ func (g *GameManager) CreateColonist() (mainColonist *Colonist) {
 
 	out.Println("What would you like to name your first colonist?")
 	name := in.Read()
-	colonist := &Colonist{Avatar:&BasicThing{Name : "you", Symbol : "@"}, Name : name}
+	colonist := &Colonist{Avatar:&BasicThing{name : "you", symbol : "@"}, Name : name}
 	mainColonist = colonist
 	out.Println("Creating a colonist with the name: \"" + colonist.Name + "\", is this correct? (y/n)")
 	answer := strings.ToLower(in.Read())
@@ -184,8 +184,10 @@ func (g *GameManager) Look(args []string) (err error) {
 		dir = g.GetDirection(dirString)
 	}
 	var name1, name2 string
-	var things []*Thing
+	var things []Thing
 	var isClear bool
+
+	var pos Position
 
 	switch dir {
 	case SHOW_POSSIBILITIES:
@@ -194,24 +196,19 @@ func (g *GameManager) Look(args []string) (err error) {
 	case CANCEL:
 		out.Println("Cancelled looking")
 		return
-	case HERE:
-		name1, name2, things, isClear, _ = world.GetNamesOfTerrainsAndObjects(Position{0,0,0})
-	case NORTH:
-		name1, name2, things, isClear, _ = world.GetNamesOfTerrainsAndObjects(Position{0,1,0})
-	case EAST:
-		name1, name2, things, isClear, _ = world.GetNamesOfTerrainsAndObjects(Position{1,0,0})
-	case SOUTH:
-		name1, name2, things, isClear, _ = world.GetNamesOfTerrainsAndObjects(Position{0,-1,0})
-	case WEST:
-		name1, name2, things, isClear, _ = world.GetNamesOfTerrainsAndObjects(Position{-1,0,0})
-	case UP:
-		name1, name2, things, isClear, _ = world.GetNamesOfTerrainsAndObjects(Position{0,0,1})
-	case DOWN:
-		name1, name2, things, isClear, _ = world.GetNamesOfTerrainsAndObjects(Position{0,0,-1})
+	case HERE: pos = Position{0,0,0}
+	case NORTH: pos = Position{0,1,0}
+	case EAST: pos = Position{1,0,0}
+	case SOUTH: pos = Position{0,-1,0}
+	case WEST: pos = Position{-1,0,0}
+	case UP: pos = Position{0,0,1}
+	case DOWN: pos = Position{0,0,-1}
 	default:
 		out.Println("The possible directions are H, N, E, S, W, U, D,")
 		return
 	}
+
+	name1, name2, things, isClear, _ = world.GetNamesOfTerrainsAndObjects(pos)
 
 	dirName := g.DirectionToString[dir]
 
@@ -222,7 +219,7 @@ func (g *GameManager) Look(args []string) (err error) {
 	}
 
 	if (things != nil) && (len(things) > 0) {
-		endString = " with: " + things[0].Name
+		endString = " with: " + things[0].Name()
 	}
 
 	out.Println(dirName  + " is " + name1 + middleString + endString + ".")
@@ -232,7 +229,7 @@ func (g *GameManager) Look(args []string) (err error) {
 
 func (w *World) GetNamesOfTerrainsAndObjects(relPos Position) (name1 string,
 		name2 string,
-		things []*Thing,
+		things []Thing,
 		isClear bool,
 		err error) {
 	pos, _ := w.Cursor.RelativePosition(relPos.x, relPos.y, relPos.z)

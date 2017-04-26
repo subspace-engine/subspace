@@ -1,32 +1,41 @@
 package game
 
-type ThingStore struct {
-	Things map[Position][]Thing
-}
+
 
 type Thing interface {
-	Name()
-	Symbol()
-	Position()
+	Name() (s string)
+	Symbol() (s string)
+	Position() (p Position)
+	SetPosition(p Position)
 }
 
 type BasicThing struct {
-	Name string
-	Symbol string
-	Position Position
+	name string
+	symbol string
+	position Position
 }
 
-func (store *ThingStore) Initialize() {
+type ThingStore interface {
+	Initialize()
+	AtPosition(p Position) (things []Thing, err error)
+	AddObjectAt(obj Thing, p Position) (err error)
+}
+
+type MapThingStore struct {
+	Things map[Position][]Thing
+}
+
+func (store *MapThingStore) Initialize() {
 	store.Things = make(map[Position][]Thing)
 }
 
-func (store *ThingStore) AtPosition(p Position) (things []Thing, err error) {
+func (store *MapThingStore) AtPosition(p Position) (things []Thing, err error) {
 	things, _ = store.Things[p]
 	err = nil
 	return
 }
 
-func (store *ThingStore) AddObjectAt(obj Thing, p Position) (err error) {
+func (store *MapThingStore) AddObjectAt(obj Thing, p Position) (err error) {
 	const DEFAULT_STORE_SIZE = 3
 	if store.Things[p] == nil {
 		store.Things[p] = make([]Thing, 0, DEFAULT_STORE_SIZE)
@@ -36,13 +45,18 @@ func (store *ThingStore) AddObjectAt(obj Thing, p Position) (err error) {
 	return
 }
 
-func (thing *Thing) Name() (s string) {
-	return thing.Name
+func (thing *BasicThing) Name() (s string) {
+	return thing.name
 }
 
-func (thing *Thing) Symbol() (s string){
-	return thing.Symbol
+func (thing *BasicThing) Symbol() (s string){
+	return thing.symbol
 }
-func (thing *Thing) Position() (p Position) {
-	return thing.Position
+
+func (thing *BasicThing) Position() (p Position) {
+	return thing.position
+}
+
+func (thing *BasicThing) SetPosition(p Position) {
+	thing.position = p
 }
