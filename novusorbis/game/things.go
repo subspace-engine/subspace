@@ -1,7 +1,5 @@
 package game
 
-
-
 type Thing interface {
 	Name() (s string)
 	Symbol() (s string)
@@ -19,6 +17,8 @@ type ThingStore interface {
 	Initialize()
 	AtPosition(p Position) (things []Thing, err error)
 	AddObjectAt(obj Thing, p Position) (err error)
+	MoveObjectTo(obj Thing, p Position) (err error)
+	ShiftObjBy(obj Thing, p Position) (err error)
 }
 
 type MapThingStore struct {
@@ -42,6 +42,38 @@ func (store *MapThingStore) AddObjectAt(obj Thing, p Position) (err error) {
 	}
 	store.Things[p] = append(store.Things[p], obj)
 	err = nil
+	return
+}
+
+func remove(s []Thing, i int) []Thing {
+	s[len(s)-1], s[i] = s[i], s[len(s)-1]
+	return s[:len(s)-1]
+}
+
+func (store *MapThingStore) MoveObjectTo(obj Thing, p Position) (err error) {
+	const DEFAULT_STORE_SIZE = 3
+	if store.Things[p] == nil {
+		store.Things[p] = make([]Thing, 0, DEFAULT_STORE_SIZE)
+	}
+	origPos := obj.Position()
+	things, err := store.AtPosition(origPos)
+
+	for index, element := range things {
+		if(element == obj) {
+			things = remove(things , index)
+			store.Things[origPos] = things
+			break
+		}
+	}
+	store.Things[p] = append(store.Things[p], obj)
+
+	err = nil
+	return
+}
+
+func (store *MapThingStore) ShiftObjBy(obj Thing, p Position) (err error) {
+	newPos, err := obj.Position().RelativePosition(p.x, p.y, p.z)
+	store.MoveObjectTo(obj,newPos)
 	return
 }
 

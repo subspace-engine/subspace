@@ -13,11 +13,11 @@ type TerrainOpacity bool
 
 const (
 	SPACE TerrainType = iota
-	SMOKE
 	GAS
+	SMOKE
 	SAND
 	STONE
-	OPEN_STRUCTURE
+	UNSEALED_STRUCTURE
 	AIRTIGHT_STRUCTURE
 	SOLID_STRUCTURE
 	UNKNOWN
@@ -29,16 +29,27 @@ const (
 )
 
 func (t *Terrain) SetUpTerrainConversions() (err error) {
-	terrainToString := map[TerrainType]string{SPACE : "space",GAS : "gas",SAND : "sand",
-		STONE : "stone", OPEN_STRUCTURE : "ore",UNKNOWN : "unknown"}
+	terrainToString := map[TerrainType]string{SPACE : "space",
+		GAS : "clear gas", SMOKE: "opaque gas",
+		SAND : "soft terrain", STONE : "hard terrain",
+		UNSEALED_STRUCTURE : "unsealed structure",
+		AIRTIGHT_STRUCTURE : "airtight structure",
+		SOLID_STRUCTURE : "solid structure",
+		UNKNOWN : "unknown"}
 	t.TerrainToString = terrainToString
 
-	terrainToSymbol := map[TerrainType]string{SPACE: ".",GAS: "-",SAND: "~",
-		STONE: "S", OPEN_STRUCTURE: "o",UNKNOWN: "_"}
+	terrainToSymbol := map[TerrainType]string{SPACE: ".", GAS: "-",
+		SMOKE: "~" , SAND: ":",
+		STONE: "^", UNSEALED_STRUCTURE: "U", AIRTIGHT_STRUCTURE: "A",
+		SOLID_STRUCTURE: "S", UNKNOWN: "_"}
 	t.TerrainToSymbol = terrainToSymbol
 
-	terrainToOpacity := map[TerrainType]TerrainOpacity{SPACE: CLEAR, GAS: CLEAR, SAND: OPAQUE,
-		STONE: OPAQUE,  OPEN_STRUCTURE: OPAQUE, UNKNOWN: OPAQUE}
+	terrainToOpacity := map[TerrainType]TerrainOpacity{SPACE: CLEAR, GAS: CLEAR,
+		SMOKE:OPAQUE, SAND: OPAQUE,
+		STONE: OPAQUE,  UNSEALED_STRUCTURE: CLEAR,
+		AIRTIGHT_STRUCTURE: CLEAR,
+		SOLID_STRUCTURE: CLEAR,
+		UNKNOWN: OPAQUE}
 	t.TerrainToOpacity = terrainToOpacity
 
 	err = nil
@@ -74,7 +85,6 @@ func (w *World) GenerateTerrain() (err error) {
 		}
 	}
 
-
 	for z := 0; z < mid ; z++ {
 		for x := 0; x < size; x++ {
 			for y:=0; y < size; y++ {
@@ -99,6 +109,7 @@ func (w *World) GenerateTerrain() (err error) {
 		}
 	}
 
+	voxels[mid][mid][mid] = AIRTIGHT_STRUCTURE
 	voxels[mid][mid][mid+1] = STONE
 	voxels[mid+1][mid+1][mid-1] = STONE
 

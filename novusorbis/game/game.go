@@ -50,6 +50,7 @@ func (g *GameManager) InitializeCommandsMap() {
 	g.CommandsMap["q"] = g.Exit
 	g.CommandsMap["commands"] = g.PrintCommands
 	g.CommandsMap["look"] = g.Look
+	g.CommandsMap["move"] = g.Move
 	g.CommandsMap["pos"] = g.Position
 	g.CommandsMap["draw"] = g.DrawWorld
 }
