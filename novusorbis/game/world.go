@@ -11,15 +11,7 @@ type World struct {
 	Size         int
 	Terrain      *Terrain
 	Things       *ThingStore
-	Cursor       *Position
-}
-
-type ThingStore struct {
-	Things map[Position][]*Thing
-}
-
-type Thing struct {
-	Name string
+	Cursor       Position
 }
 
 type Position struct {
@@ -34,30 +26,11 @@ type Base struct {
 
 type Colonist struct {
 	Name string
+	Avatar *Thing
 }
 
-func (store *ThingStore) Initialize() {
-	store.Things = make(map[Position][]*Thing)
-}
-
-func (store *ThingStore) AtPosition(p *Position) (things []*Thing, err error) {
-	things, _ = store.Things[*p]
-	err = nil
-	return
-}
-
-func (store *ThingStore) AddObjectAt(obj *Thing, p *Position) (err error) {
-	const DEFAULT_STORE_SIZE = 3
-	if store.Things[*p] == nil {
-		store.Things[*p] = make([]*Thing, 0, DEFAULT_STORE_SIZE)
-	}
-	store.Things[*p] = append(store.Things[*p], obj)
-	err = nil
-	return
-}
-
-func (inPos *Position) RelativePosition(x int, y int, z int) (outPos *Position, err error) {
-	outPos = &Position{inPos.x + x, inPos.y + y, inPos.z + z}
+func (inPos *Position) RelativePosition(x int, y int, z int) (outPos Position, err error) {
+	outPos = Position{inPos.x + x, inPos.y + y, inPos.z + z}
 	err = nil
 	return
 }
@@ -74,7 +47,7 @@ func (w *World) DrawnWorldAtZ(z int) (drawnWorld string, err error){
 
 	for y:=0; y < size; y++ {
 		for x := 0; x < size; x++ {
-			symbol, _ := w.GetSymbolOfWorldAt(&Position{x,y,z})
+			symbol, _ := w.GetSymbolOfWorldAt(Position{x,y,z})
 			byteWorld.WriteString(symbol)
 		}
 		byteWorld.WriteString("\n")
@@ -84,12 +57,12 @@ func (w *World) DrawnWorldAtZ(z int) (drawnWorld string, err error){
 	return
 }
 
-func (w *World) GetSymbolOfWorldAt(p *Position) (worldChar string, err error) {
+func (w *World) GetSymbolOfWorldAt(p Position) (worldChar string, err error) {
 	terrain := w.Terrain
 	things, _ := w.Things.AtPosition(p)
-	if len(things) > 1 {
+	if len(things) > 0 {
 		err = nil
-		worldChar = "X"
+		worldChar = things[0].Symbol
 	} else {
 		worldChar, err = terrain.GetSymbolOfTerrainAt(p)
 	}
@@ -103,40 +76,41 @@ func (g *GameManager) CreateWorld() (err error) {
 	g.World = w
 	mid := w.Size/2
 
-	c := &Position{mid,mid,mid}
+	c := Position{mid,mid,mid}
 	w.Cursor = c
+
+	w.GenerateTerrain()
 
 	store := &ThingStore{}
 	store.Initialize()
 	w.Things = store
 
-	pos := &Position{mid,mid,mid}
-	obj := &Thing{"Random Object"}
-	store.AddObjectAt(obj, pos)
+	w.MainColonist = g.CreateColonist()
+	// g.CreateBase() // TODO return base
 
-	// g.CreateColonist()
-	// g.CreateBase()
-	w.GenerateTerrain()
+	pos := Position{mid,mid,mid}
+	obj := g.World.MainColonist.Avatar
+	obj.Position = pos
+	store.AddObjectAt(obj, pos)
 
 	err = nil
 	return
 }
 
-func (g *GameManager) CreateColonist() {
+func (g *GameManager) CreateColonist() (mainColonist *Colonist) {
 	out := g.Out
 	in := g.In
-	world := g.World
 
 	out.Println("What would you like to name your first colonist?")
 	name := in.Read()
-	colonist := &Colonist{Name : name}
-	world.MainColonist = colonist
+	colonist := &Colonist{Avatar:&BasicThing{Name : "you", Symbol : "@"}, Name : name}
+	mainColonist = colonist
 	out.Println("Creating a colonist with the name: \"" + colonist.Name + "\", is this correct? (y/n)")
 	answer := strings.ToLower(in.Read())
-	if (answer[0] == 'y') {
+	if (len(answer) > 0 && answer[0] == 'y') {
 		out.Println("Colonist with name \"" + colonist.Name + "\" created.")
 	} else {
-		g.CreateColonist()
+		mainColonist = g.CreateColonist()
 	}
 	return
 }

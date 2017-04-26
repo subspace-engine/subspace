@@ -50,6 +50,7 @@ func (g *GameManager) InitializeCommandsMap() {
 	g.CommandsMap["q"] = g.Exit
 	g.CommandsMap["commands"] = g.PrintCommands
 	g.CommandsMap["look"] = g.Look
+	g.CommandsMap["pos"] = g.Position
 	g.CommandsMap["draw"] = g.DrawWorld
 }
 
@@ -70,19 +71,25 @@ func (g *GameManager) DrawWorld(args []string) (err error) {
 	}
 	out := g.Out
 
-	out.Println("Drawing terrain")
+	out.Println("Drawing terrain at " + strconv.Itoa(z))
 	drawnTerrain, _ := g.World.DrawnWorldAtZ(z)
 	out.Print(drawnTerrain)
 	return nil
 }
 
+func (g *GameManager) Position(args []string) (err error) {
+	err = nil
+	p := g.World.MainColonist.Avatar.Position()
+	g.Out.Println("(" + strconv.Itoa(p.x) + ", " + strconv.Itoa(p.y) + ", " + strconv.Itoa(p.z) + ")")
+	return
+}
 
 func (g *GameManager) Exit(args []string) (err error) {
 	in := g.In
 	out := g.Out
 	out.Println("Are you sure you want to exit? (y/n)")
 	answer := strings.ToLower(in.Read())
-	if (answer[0] == 'y') {
+	if (len(answer) > 0 && answer[0] == 'y') {
 		out.Println("Returning to reality.")
 		err = &ExitCalled{"A subroutine called exit"}
 	} else {
@@ -92,13 +99,17 @@ func (g *GameManager) Exit(args []string) (err error) {
 	return
 }
 
-
 func (g *GameManager) LoopStep() (err error) {
 	in := g.In
 	out := g.Out
 	err = nil
 
 	line := strings.Fields(strings.ToLower(in.Read()))
+
+	if len(line) == 0 {
+		return
+	}
+
 	command := line[0]
 	commandsMap := g.CommandsMap
 

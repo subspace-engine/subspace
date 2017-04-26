@@ -42,19 +42,19 @@ func (t *Terrain) SetUpTerrainConversions() (err error) {
 	return
 }
 
-func (t *Terrain) GetNameOfTerrainAt(p *Position) (terrainName string, err error) {
+func (t *Terrain) GetNameOfTerrainAt(p Position) (terrainName string, err error) {
 	terrainType, err := t.GetTerrainTypeAt(p)
 	terrainName = t.TerrainToString[terrainType]
 	return
 }
 
-func (t *Terrain) GetSymbolOfTerrainAt(p *Position) (terrainChar string, err error) {
+func (t *Terrain) GetSymbolOfTerrainAt(p Position) (terrainChar string, err error) {
 	terrainType, err := t.GetTerrainTypeAt(p)
 	terrainChar = t.TerrainToSymbol[terrainType]
 	return
 }
 
-func (t *Terrain) GetTerrainTypeAt(p *Position) (terrainType TerrainType, err error) {
+func (t *Terrain) GetTerrainTypeAt(p Position) (terrainType TerrainType, err error) {
 	terrainType = t.voxels[p.z][p.y][p.x]
 	err = nil
 	return
