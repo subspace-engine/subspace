@@ -1,0 +1,30 @@
+Initial requirements and design for areas and tiles
+
+Willem Venter
+
+The minimum requirements of a game world / area architecture. Feel free to add comments or changes and let me know what I've forgotten.
+
+requirements:
+- Represent a fixed-size 3d world.
+- Specify world size at creation time.
+- Allow parts of the game world to be rendered in more detail dynamicly
+- Support loading and unloading of multiple worlds in the same game
+- Have a scalable way for a world to contain optionally nested objects (both movable and static). 
+- allow the definition of "rules" that specify behavior of objects in the world and the effects on objects.
+
+
+All of the rest are just implementation details.
+
+design:
+- world is divided into sectors. It is up to the game designer to decide how big sectors need to be.
+- Each world sector has a type. Game developers can decide what types mean, but generally it is meant for things like terrain (example: ground, air, water etc). The sector type can be used when evaluating the world rules. The type must be able to change. Representation can either be a single byte slice or slices of byte slices, where a byte is the sector type.
+- Objects can be stored in a structure that directly overlays the sector type world "map". In other words, if the object is located at 1,1,1, its terrain type would be the same type as the tile at 1,1,1. How the objects will be represented is still undecided, but initial thoughts are that all ojbects for an n by n by n group of sectors can be held in the same data structure. The value of n will depend on how sparce objects are relative to the size of the world, but there must be an easy way to notify other selected objects of changes (e.g. movement for objects "near" it) and changes in the world.
+
+subfeatures:
+Areas:
+-purpose: player point of view and sound environment, application of distance-based effects based on location, possibly collission detection,
+- Definition: An area is a filtered selection of objects in the world with the primary criteria being object location, but other filters, such as terrain must also be possible.
+
+world objects:
+- At a minimum an object is a mapping of attribute name to some value. Game logic should exist outside the representation. Instead, object modifiers can expect objects to contain certain attributes based on an ID or similar primary identifier. Logic takes an object as parameter and then changes the values inside the object as a result of the logic.
+
