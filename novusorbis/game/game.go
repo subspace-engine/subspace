@@ -6,6 +6,23 @@ import (
 	"strconv"
 )
 
+const GAME_LOGO = `
+             :::;;;;;;::,
+        ,,,:::;;;;;:""'''":,
+      .,,,:::;;;;"          '
+    ...,,,:::;;;"  N O V U S "
+   ...,,,,:::;;;"             "
+    ...,,,:::;;;". O R B I S  ";
+    ...,,,::::;;;".         .";;;
+    ....,,,::::;;;;;:,....,:;;;;:
+     ....,,,:::::;;;;;;;;;;;;;:::
+      ....,,,,::::::;;;;;;;::::::
+        ....,,,,,:::::::::::::,,,
+         .....,,,,,,,,,,,,,,,,,,
+            .......,,,,,,,,,...
+               ...............
+`
+
 type Output interface  {
 	Print(s string)
 	Println(s string)
@@ -30,7 +47,8 @@ type CommandParser struct{
 
 func (g *GameManager) Start() {
 	out := g.Out
-	out.Println(" - Novus Orbis - ")
+	// out.Println(" - Novus Orbis - ")
+	out.Println(GAME_LOGO)
 	g.InitializeCommandsMap()
 	g.SetUpDirectionMaps()
 	g.MainLoop()
@@ -74,6 +92,11 @@ func (g *GameManager) DrawWorld(args []string) (err error) {
 
 	out.Println("Drawing terrain at " + strconv.Itoa(z))
 	drawnTerrain, _ := g.World.DrawnWorldAtZ(z)
+
+	out.Println(drawnTerrain)
+
+	drawnTerrain, _ = g.World.DrawnWorldAtZ(z-1)
+
 	out.Print(drawnTerrain)
 	return nil
 }
@@ -147,4 +170,5 @@ func (g *GameManager) StartNewGame() (err error) {
 	err = nil
 	return
 }
+
 

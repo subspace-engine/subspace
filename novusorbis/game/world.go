@@ -3,7 +3,6 @@ package game
 import (
 	"strings"
 	"bytes"
-	"fmt"
 )
 
 type World struct {
@@ -114,8 +113,8 @@ func (g *GameManager) CreateWorld() (err error) {
 	store.Initialize()
 	w.Things = store
 
-	w.MainColonist = g.CreateDefaultColonist() // TODO
-	w.MainBase = g.CreateDefaultBase() // TODO
+	w.MainColonist = g.CreateColonist() // TODO
+	w.MainBase = g.CreateBase() // TODO
 
 	pos := Position{mid,mid,mid}
 	mainAvatar := g.World.MainColonist.Avatar
@@ -259,8 +258,6 @@ func (g *GameManager) Look(args []string) (err error) {
 		middleString =  " above " + name2
 	}
 
-	fmt.Println("Things: ", things)
-
 	if (things != nil) && (len(things) > 0) {
 		endString = " with: "
 		for i, thing := range things {
@@ -335,8 +332,6 @@ func (g *GameManager) Move(args []string) (err error) {
 	if (isClear) {
 		middleString =  " above " + name2
 	}
-
-	fmt.Println("Things: ", things)
 
 	if (things != nil) && (len(things) > 0) {
 		endString = " with: "
