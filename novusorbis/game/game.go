@@ -47,7 +47,6 @@ type CommandParser struct{
 
 func (g *GameManager) Start() {
 	out := g.Out
-	// out.Println(" - Novus Orbis - ")
 	out.Println(GAME_LOGO)
 	g.InitializeCommandsMap()
 	g.SetUpDirectionMaps()

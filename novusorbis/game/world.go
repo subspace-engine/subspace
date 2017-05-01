@@ -11,6 +11,7 @@ type World struct {
 	Size         int
 	Terrain      *Terrain
 	Things       *MapThingStore
+	Structures   *MapStructureStore
 	Cursor       Position
 }
 
@@ -109,21 +110,25 @@ func (g *GameManager) CreateWorld() (err error) {
 
 	w.GenerateTerrain()
 
-	store := &MapThingStore{}
-	store.Initialize()
-	w.Things = store
+	thingStore := &MapThingStore{}
+	thingStore.Initialize()
+	w.Things = thingStore
 
-	w.MainColonist = g.CreateColonist() // TODO
-	w.MainBase = g.CreateBase() // TODO
+	structureStore := &MapStructureStore{}
+	structureStore.Initialize()
+	w.Structures = structureStore
+
+	w.MainColonist = g.CreateDefaultColonist() // TODO
+	w.MainBase = g.CreateDefaultBase() // TODO
 
 	pos := Position{mid,mid,mid}
 	mainAvatar := g.World.MainColonist.Avatar
 	mainAvatar.SetPosition(pos)
-	store.AddObjectAt(mainAvatar, pos)
+	thingStore.AddObjectAt(mainAvatar, pos)
 
 	baseAvatar := g.World.MainBase.Avatar
 	baseAvatar.SetPosition(pos)
-	store.AddObjectAt(baseAvatar, pos)
+	thingStore.AddObjectAt(baseAvatar, pos)
 
 	err = nil
 	return
