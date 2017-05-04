@@ -1,4 +1,4 @@
-package game
+package world
 
 type Thing interface {
 	Name() (s string)
@@ -12,6 +12,11 @@ type BasicThing struct {
 	symbol string
 	position Position
 }
+
+func NewThing(Name string, Symbol string, Position Position) (Thing) {
+	return &BasicThing{name: Name, symbol: Symbol, position: Position}
+}
+
 
 type ThingStore interface {
 	Initialize()
@@ -72,7 +77,7 @@ func (store *MapThingStore) MoveObjectTo(obj Thing, p Position) (err error) {
 }
 
 func (store *MapThingStore) ShiftObjBy(obj Thing, p Position) (err error) {
-	newPos, err := obj.Position().RelativePosition(p.x, p.y, p.z)
+	newPos, err := obj.Position().RelativePosition(p.X, p.Y, p.Z)
 	store.MoveObjectTo(obj,newPos)
 	return
 }

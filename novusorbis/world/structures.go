@@ -1,4 +1,4 @@
-package game
+package world
 
 type Structure interface {
 	Thing
@@ -13,4 +13,12 @@ type BasicStructure struct {
 
 type MapStructureStore struct {
 	MapThingStore
+}
+
+func NewStructure() (Structure) {
+	return &BasicStructure{}
+}
+
+func NewStructureStore() (StructureStore) {
+	return &MapStructureStore{}
 }

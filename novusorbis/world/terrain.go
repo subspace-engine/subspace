@@ -1,4 +1,4 @@
-package game
+package world
 
 type Terrain struct {
 	size int
@@ -69,7 +69,7 @@ func (t *Terrain) GetSymbolOfTerrainAt(p Position) (terrainChar string, err erro
 }
 
 func (t *Terrain) GetTerrainTypeAt(p Position) (terrainType TerrainType, err error) {
-	terrainType = t.voxels[p.z][p.y][p.x]
+	terrainType = t.voxels[p.Z][p.Y][p.X]
 	err = nil
 	return
 }
