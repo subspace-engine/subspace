@@ -4,6 +4,7 @@ import (
 	"strings"
 	"sort"
 	"strconv"
+	"time"
 )
 
 const GAME_LOGO = `
@@ -21,6 +22,10 @@ const GAME_LOGO = `
          .....,,,,,,,,,,,,,,,,,,
             .......,,,,,,,,,...
                ...............
+
+
+
+
 `
 
 type Output interface  {
@@ -46,11 +51,21 @@ type CommandParser struct{
 }
 
 func (g *GameManager) Start() {
-	out := g.Out
-	out.Println(GAME_LOGO)
+	g.PrintLogo()
 	g.InitializeCommandsMap()
 	g.SetUpDirectionMaps()
 	g.MainLoop()
+}
+
+func (g *GameManager) PrintLogo() {
+	out := g.Out
+	for _, r := range GAME_LOGO {
+		c := string(r)
+		out.Print(c)
+		if (r == rune('\n')) {
+			time.Sleep(250 * time.Millisecond)
+		}
+	}
 }
 
 type ExitCalled struct {

@@ -7,10 +7,10 @@ import (
 
 func ExampleUi_Print() {
 	io := ui.NewInputOutput()
-	io.Print("Test String 1,")
+	io.Print("Test String 1, ")
 	io.Print("Test String 2")
 
-	// Output: Test String 1,Test String 2
+	// Output: Test String 1, Test String 2
 }
 
 
