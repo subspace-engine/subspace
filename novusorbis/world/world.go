@@ -14,11 +14,6 @@ type World struct {
 	Cursor       Position
 }
 
-
-
-
-
-
 type Position struct {
 	X int
 	Y int
