@@ -10,7 +10,7 @@ import (
 type InputOutput interface {
 	Print(s string)
 	Println(s string)
-	Read() (s string)
+	Read() (s string, err error)
 }
 
 type ui struct {
@@ -31,8 +31,8 @@ func (u *ui) Println(message string) {
 	fmt.Println(message)
 }
 
-func (u *ui) Read() (message string) {
-	message , _ = u.reader.ReadString('\n')
+func (u *ui) Read() (message string, err error) {
+	message , err = u.reader.ReadString('\n')
 	message = strings.TrimSpace(message)
 	return
 }

@@ -3,14 +3,8 @@ package game_test
 import (
 	"testing"
 	"errors"
+	"github.com/subspace-engine/subspace/novusorbis/game"
 )
-
-type InputOutput interface {
-	Print(s string)
-	Println(s string)
-	Read() (s string)
-}
-
 
 type MockIO struct {
 	InIter          int
@@ -50,6 +44,15 @@ func TestMockioReading(t *testing.T) {
 	}
 }
 
+func TestMockioReadingMultiple(t *testing.T) {
+	mockIO := NewMockIO([]string{"Hello,", "World!"})
+	read1, err := mockIO.Read()
+	read2, err := mockIO.Read()
+	if (err != nil || read1 != "Hello," || read2 != "World!") {
+		t.Fatalf("Expected \"%s\" but got \"%s\", \"%s\"", "Hello, World!", read1, read2)
+	}
+}
+
 func TestMockioWriting(t *testing.T) {
 	mockIO := NewMockIO([]string{})
 	mockIO.Print("Hello!")
@@ -60,5 +63,19 @@ func TestMockioWriting(t *testing.T) {
 }
 
 func TestExitCalled_Error(t *testing.T) {
+	mockIo := NewMockIO([]string{"y"})
+	g := game.GameManager{InputOutput : mockIo}
+	err := g.Exit([]string{})
+	outputs := mockIo.CollectedPrints
+	if (err == nil) {
+		t.Fatalf("Expected an error but got nil. Outputs: %v", outputs)
+	}
+}
 
+func TestGameManager_Exit(t *testing.T) {
+	mockIo := NewMockIO([]string{"q", "y"})
+	g := game.GameManager{InputOutput : mockIo}
+	g.InitializeCommandsMap()
+	g.MainLoop()
+	// If this doesn't work we expect a timeout
 }
