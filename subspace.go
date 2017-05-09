@@ -7,6 +7,8 @@ import (
 
 func main() {
 	inOut := ui.NewInputOutput()
-	game := game.GameManager{Out : inOut, In : inOut}
+	questionAsker := game.QuestionAsker{Out : inOut, In : inOut}
+	baseFactory := game.BaseFactory{questionAsker}
+	game := game.GameManager{Out : inOut, In : inOut, BaseFactory: baseFactory}
 	game.Start()
 }

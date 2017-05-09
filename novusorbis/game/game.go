@@ -45,6 +45,7 @@ type GameManager struct{
 	World *world.World
 	LetterToDirection map[rune]Direction
 	DirectionToString map[Direction]string
+	BaseFactory BaseFactory
 }
 
 type CommandParser struct{
@@ -248,19 +249,62 @@ func (g *GameManager) CreateColonist() (mainColonist *world.Colonist) {
 	return
 }
 
-func (g *GameManager) CreateBase() (base *world.Base){
-	out := g.Out
-	in := g.In
-	out.Println("What would you like to name your base?")
-	name := in.Read()
-	base = &world.Base{Name: "Base" + name, Avatar: world.NewThing("Base " + name, "B", world.Position{2,2,2})}
-	out.Println("Naming your base: \"" + base.Name + "\", is this correct? (y/n)")
+type QuestionAsker struct {
+	In Input
+	Out Output
+}
+
+func (q *QuestionAsker) Ask(question string) (answer string) {
+	in := q.In
+	out := q.Out
+
+	out.Println(question)
+
+	answer = strings.ToLower(in.Read())
+	return
+}
+
+func (q *QuestionAsker) AskYesNo(question string) (yesno bool) {
+	in := q.In
+	out := q.Out
+
+	out.Println(question)
+
 	answer := strings.ToLower(in.Read())
+
 	if (answer[0] == 'y') {
+		yesno = true
+	} else {
+		yesno = false
+	}
+	return
+}
+
+
+
+type BaseFactory struct{
+	in Input
+	out Output
+	questionAsker QuestionAsker
+}
+
+func (b *BaseFactory) CreateBase() (base *world.Base) {
+	q := b.questionAsker
+	out := b.out
+	name := q.Ask("What would you like to name your base?")
+	base = &world.Base{Name: "Base" + name, Avatar: world.NewThing("Base " + name, "B", world.Position{2,2,2})}
+	isAnswerYes := q.AskYesNo("Naming your base: \"" + base.Name + "\", is this correct? (y/n)")
+
+	if (isAnswerYes) {
 		out.Println("Base with name \"" + base.Name + "\" created.")
 	} else {
-		base = g.CreateBase()
+		base = b.CreateBase()
 	}
+	return
+}
+
+func (g *GameManager) CreateBase() (base *world.Base){
+	base = g.BaseFactory.CreateBase() // TODO Create Base Factory
 	return
 }
 
