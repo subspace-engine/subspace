@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 	"github.com/subspace-engine/subspace/novusorbis/world"
+	"github.com/subspace-engine/subspace/novusorbis/ui"
 )
 
 const GAME_LOGO = `
@@ -29,18 +30,8 @@ const GAME_LOGO = `
 
 `
 
-type Output interface  {
-	Print(s string)
-	Println(s string)
-}
-
-type Input interface  {
-	Read() (s string)
-}
-
 type GameManager struct{
-	Out Output
-	In Input
+	ui.InputOutput
 	CommandsMap map[string]func(args []string) error
 	World *world.World
 	LetterToDirection map[rune]Direction
@@ -48,22 +39,17 @@ type GameManager struct{
 	BaseFactory BaseFactory
 }
 
-type CommandParser struct{
-	In Input
-}
-
 func (g *GameManager) Start() {
-	g.PrintLogo()
+	// g.PrintLogo() TODO
 	g.InitializeCommandsMap()
 	g.SetUpDirectionMaps()
 	g.MainLoop()
 }
 
 func (g *GameManager) PrintLogo() {
-	out := g.Out
 	for _, r := range GAME_LOGO {
 		c := string(r)
-		out.Print(c)
+		g.Print(c)
 		if (r == rune('\n')) {
 			time.Sleep(250 * time.Millisecond)
 		}
@@ -104,47 +90,45 @@ func (g *GameManager) DrawWorld(args []string) (err error) {
 	if (len(args) > 1) {
 		z, err = strconv.Atoi(strings.TrimSpace(args[1]))
 	}
-	out := g.Out
-
-	out.Println("Drawing terrain at " + strconv.Itoa(z))
+	g.Println("Drawing terrain at " + strconv.Itoa(z))
 	drawnTerrain, _ := g.World.DrawnWorldAtZ(z)
 
-	out.Println(drawnTerrain)
+	g.Println(drawnTerrain)
 
 	drawnTerrain, _ = g.World.DrawnWorldAtZ(z-1)
 
-	out.Print(drawnTerrain)
+	g.Print(drawnTerrain)
 	return nil
 }
 
 func (g *GameManager) Position(args []string) (err error) {
 	err = nil
 	p := g.World.MainColonist.Avatar.Position()
-	g.Out.Println("(" + strconv.Itoa(p.X) + ", " + strconv.Itoa(p.Y) + ", " + strconv.Itoa(p.Z) + ")")
+	g.Println("(" + strconv.Itoa(p.X) + ", " + strconv.Itoa(p.Y) + ", " + strconv.Itoa(p.Z) + ")")
 	return
 }
 
 func (g *GameManager) Exit(args []string) (err error) {
-	in := g.In
-	out := g.Out
-	out.Println("Are you sure you want to exit? (y/n)")
-	answer := strings.ToLower(in.Read())
+	return Exit(g)
+}
+
+func Exit(io ui.InputOutput)  (err error) {
+	io.Println("Are you sure you want to exit? (y/n)")
+	answer := strings.ToLower(io.Read())
 	if (len(answer) > 0 && answer[0] == 'y') {
-		out.Println("Returning to reality.")
+		io.Println("Returning to reality.")
 		err = &ExitCalled{"A subroutine called exit"}
 	} else {
-		out.Println("Cancelled exit")
+		io.Println("Cancelled exit")
 		err = nil
 	}
 	return
 }
 
 func (g *GameManager) LoopStep() (err error) {
-	in := g.In
-	out := g.Out
 	err = nil
 
-	line := strings.Fields(strings.ToLower(in.Read()))
+	line := strings.Fields(strings.ToLower(g.Read()))
 
 	if len(line) == 0 {
 		return
@@ -155,7 +139,7 @@ func (g *GameManager) LoopStep() (err error) {
 
 	commandFunction := commandsMap[command]
 	if commandFunction == nil {
-		out.Println("Command \"" + command + "\" not recognized.")
+		g.Println("Command \"" + command + "\" not recognized.")
 		g.PrintCommands([]string{})
 	} else {
 		err = commandFunction(line)
@@ -172,16 +156,15 @@ func (g *GameManager) PrintCommands(args []string) (err error) {
 	}
 	sort.Strings(keys)
 
-	g.Out.Print("The available commands are: ")
-	g.Out.Println(strings.Join(keys, ", "))
+	g.Print("The available commands are: ")
+	g.Println(strings.Join(keys, ", "))
 
 	err = nil
 	return
 }
 
 func (g *GameManager) StartNewGame() (err error) {
-	out := g.Out
-	out.Println("Starting a new game")
+	g.Println("Starting a new game")
 	g.CreateWorld()
 	err = nil
 	return
@@ -232,17 +215,14 @@ func (g *GameManager) CreateDefaultBase() (base *world.Base) {
 
 
 func (g *GameManager) CreateColonist() (mainColonist *world.Colonist) {
-	out := g.Out
-	in := g.In
-
-	out.Println("What would you like to name your first colonist?")
-	name := in.Read()
+	g.Println("What would you like to name your first colonist?")
+	name := g.Read()
 
 	mainColonist = &world.Colonist{Name: name, Avatar:world.NewThing("You", "@", world.Position{2,2,2})}
-	out.Println("Creating a colonist with the name: \"" + mainColonist.Name + "\", is this correct? (y/n)")
-	answer := strings.ToLower(in.Read())
+	g.Println("Creating a colonist with the name: \"" + mainColonist.Name + "\", is this correct? (y/n)")
+	answer := strings.ToLower(g.Read())
 	if (len(answer) > 0 && answer[0] == 'y') {
-		out.Println("Colonist with name \"" + mainColonist.Name + "\" created.")
+		g.Println("Colonist with name \"" + mainColonist.Name + "\" created.")
 	} else {
 		mainColonist = g.CreateColonist()
 	}
@@ -250,27 +230,18 @@ func (g *GameManager) CreateColonist() (mainColonist *world.Colonist) {
 }
 
 type QuestionAsker struct {
-	In Input
-	Out Output
+	ui.InputOutput
 }
 
 func (q *QuestionAsker) Ask(question string) (answer string) {
-	in := q.In
-	out := q.Out
-
-	out.Println(question)
-
-	answer = strings.ToLower(in.Read())
+	q.Println(question)
+	answer = strings.ToLower(q.Read())
 	return
 }
 
 func (q *QuestionAsker) AskYesNo(question string) (yesno bool) {
-	in := q.In
-	out := q.Out
-
-	out.Println(question)
-
-	answer := strings.ToLower(in.Read())
+	q.Println(question)
+	answer := strings.ToLower(q.Read())
 
 	if (answer[0] == 'y') {
 		yesno = true
@@ -280,23 +251,17 @@ func (q *QuestionAsker) AskYesNo(question string) (yesno bool) {
 	return
 }
 
-
-
 type BaseFactory struct{
-	in Input
-	out Output
-	questionAsker QuestionAsker
+	QuestionAsker
 }
 
 func (b *BaseFactory) CreateBase() (base *world.Base) {
-	q := b.questionAsker
-	out := b.out
-	name := q.Ask("What would you like to name your base?")
+	name := b.Ask("What would you like to name your base?")
 	base = &world.Base{Name: "Base" + name, Avatar: world.NewThing("Base " + name, "B", world.Position{2,2,2})}
-	isAnswerYes := q.AskYesNo("Naming your base: \"" + base.Name + "\", is this correct? (y/n)")
+	isAnswerYes := b.AskYesNo("Naming your base: \"" + base.Name + "\", is this correct? (y/n)")
 
 	if (isAnswerYes) {
-		out.Println("Base with name \"" + base.Name + "\" created.")
+		b.Println("Base with name \"" + base.Name + "\" created.")
 	} else {
 		base = b.CreateBase()
 	}
@@ -339,21 +304,19 @@ const (
 )
 
 func (g *GameManager) Look(args []string) (err error) {
-	out := g.Out
-	in := g.In
 	w := g.World
 	var dir Direction
 
 	if (len(args) <= 1) {
 		for dir = RETRY ; (dir == RETRY); {
-			out.Println("In which direction would you like to look? ('c' to cancel or 'p' for possible directions)")
-			dirString := strings.ToLower(in.Read())
+			g.Println("In which direction would you like to look? ('c' to cancel or 'p' for possible directions)")
+			dirString := strings.ToLower(g.Read())
 			if (strings.HasPrefix(dirString, "look")) {
 				dirString = strings.TrimSpace(dirString[4:])
 			}
 			dir = g.GetDirection(dirString)
 			if (dir == RETRY) {
-				out.Println("The possible directions are H, N, E, S, W, U, D")
+				g.Println("The possible directions are H, N, E, S, W, U, D")
 			}
 		}
 	} else {
@@ -368,10 +331,10 @@ func (g *GameManager) Look(args []string) (err error) {
 
 	switch dir {
 	case SHOW_POSSIBILITIES:
-		out.Println("The possible directions are H, N, E, S, W, U, D")
+		g.Println("The possible directions are H, N, E, S, W, U, D")
 		return
 	case CANCEL:
-		out.Println("Cancelled looking")
+		g.Println("Cancelled looking")
 		return
 	case HERE: pos = world.Position{0,0,0}
 	case NORTH: pos = world.Position{0,1,0}
@@ -381,7 +344,7 @@ func (g *GameManager) Look(args []string) (err error) {
 	case UP: pos = world.Position{0,0,1}
 	case DOWN: pos = world.Position{0,0,-1}
 	default:
-		out.Println("The possible directions are H, N, E, S, W, U, D,")
+		g.Println("The possible directions are H, N, E, S, W, U, D,")
 		return
 	}
 
@@ -407,27 +370,25 @@ func (g *GameManager) Look(args []string) (err error) {
 		}
 	}
 
-	out.Println(dirName  + " is " + name1 + middleString + endString + ".")
+	g.Println(dirName  + " is " + name1 + middleString + endString + ".")
 	err = nil
 	return
 }
 
 func (g *GameManager) Move(args []string) (err error) {
-	out := g.Out
-	in := g.In
 	w := g.World
 	var dir Direction
 
 	if (len(args) <= 1) {
 		for dir = RETRY ; (dir == RETRY); {
-			out.Println("In which direction would you like to move? ('c' to cancel or 'p' for possible directions)")
-			dirString := strings.ToLower(in.Read())
+			g.Println("In which direction would you like to move? ('c' to cancel or 'p' for possible directions)")
+			dirString := strings.ToLower(g.Read())
 			if (strings.HasPrefix(dirString, "move")) {
 				dirString = strings.TrimSpace(dirString[4:])
 			}
 			dir = g.GetDirection(dirString)
 			if (dir == RETRY) {
-				out.Println("The possible directions are H, N, E, S, W, U, D")
+				g.Println("The possible directions are H, N, E, S, W, U, D")
 			}
 		}
 	} else {
@@ -442,10 +403,10 @@ func (g *GameManager) Move(args []string) (err error) {
 
 	switch dir {
 	case SHOW_POSSIBILITIES:
-		out.Println("The possible directions are H, N, E, S, W, U, D")
+		g.Println("The possible directions are H, N, E, S, W, U, D")
 		return
 	case CANCEL:
-		out.Println("Cancelled moving")
+		g.Println("Cancelled moving")
 		return
 	case HERE: pos = world.Position{0,0,0}
 	case NORTH: pos = world.Position{0,1,0}
@@ -455,7 +416,7 @@ func (g *GameManager) Move(args []string) (err error) {
 	case UP: pos = world.Position{0,0,1}
 	case DOWN: pos = world.Position{0,0,-1}
 	default:
-		out.Println("The possible directions are H, N, E, S, W, U, D,")
+		g.Println("The possible directions are H, N, E, S, W, U, D,")
 		return
 	}
 
@@ -482,8 +443,8 @@ func (g *GameManager) Move(args []string) (err error) {
 		}
 	}
 
-	out.Println("Moved " + moveDirName + ".")
-	out.Println(dirName  + " is " + name1 + middleString + endString + ".")
+	g.Println("Moved " + moveDirName + ".")
+	g.Println(dirName  + " is " + name1 + middleString + endString + ".")
 
 	err = g.World.ShiftColonist(pos)
 	return

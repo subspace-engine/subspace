@@ -58,3 +58,7 @@ func TestMockioWriting(t *testing.T) {
 		t.Fatalf("Expected \"%s\" but got \"%s\"", "Hello!", outputs[0])
 	}
 }
+
+func TestExitCalled_Error(t *testing.T) {
+
+}
