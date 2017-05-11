@@ -1,75 +1,86 @@
 package world
 
-type Thing interface {
+type NamedThing interface {
 	Name() (s string)
+}
+
+type Mover interface {
+	NamedThing
 	Symbol() (s string)
 	Position() (p Position)
 	SetPosition(p Position)
 }
 
-type BasicThing struct {
+type BasicNamedThing struct {
 	name string
+}
+
+type BasicMover struct {
+	BasicNamedThing
 	symbol string
 	position Position
 }
 
-func NewThing(Name string, Symbol string, Position Position) (Thing) {
-	return &BasicThing{name: Name, symbol: Symbol, position: Position}
+func NewNamedThing(Name string) (NamedThing){
+	return &BasicNamedThing{name: Name}
 }
 
+func NewMover(Name string, Symbol string, Position Position) (Mover) {
+	return &BasicMover{BasicNamedThing : NewNamedThing(Name), symbol: Symbol, position: Position}
+}
 
-type ThingStore interface {
+type MoverStore interface {
 	Initialize()
-	AtPosition(p Position) (things []Thing, err error)
-	AddObjectAt(obj Thing, p Position) (err error)
-	MoveObjectTo(obj Thing, p Position) (err error)
-	ShiftObjBy(obj Thing, p Position) (err error)
+	AtPosition(p Position) (things []Mover, err error)
+	AddObjectAt(obj Mover, p Position) (err error)
+	MoveObjectTo(obj Mover, p Position) (err error)
+	ShiftObjBy(obj Mover, p Position) (err error)
 }
 
-type MapThingStore struct {
-	Things map[Position][]Thing
+type MapMoverStore struct {
+	Movers map[Position][]Mover
 }
 
-func (store *MapThingStore) Initialize() {
-	store.Things = make(map[Position][]Thing)
+func (store *MapMoverStore) Initialize() {
+	store.Movers = make(map[Position][]Mover)
 }
 
-func (store *MapThingStore) AtPosition(p Position) (things []Thing, err error) {
-	things, _ = store.Things[p]
+func (store *MapMoverStore) AtPosition(p Position) (movers []Mover, err error) {
+	movers, _ = store.Movers[p]
 	err = nil
 	return
 }
 
-func (store *MapThingStore) AddObjectAt(obj Thing, p Position) (err error) {
+func (store *MapMoverStore) AddObjectAt(obj Mover, p Position) (err error) {
 	const DEFAULT_STORE_SIZE = 3
-	if store.Things[p] == nil {
-		store.Things[p] = make([]Thing, 0, DEFAULT_STORE_SIZE)
+	if store.Movers[p] == nil {
+		store.Movers[p] = make([]Mover, 0, DEFAULT_STORE_SIZE)
 	}
-	store.Things[p] = append(store.Things[p], obj)
+	store.Movers[p] = append(store.Movers[p], obj)
 	err = nil
 	return
 }
 
-func (store *MapThingStore) AddObject(obj Thing) (err error) {
+func (store *MapMoverStore) AddObject(obj Mover) (err error) {
 	const DEFAULT_STORE_SIZE = 3
 	p := obj.Position()
-	if store.Things[p] == nil {
-		store.Things[p] = make([]Thing, 0, DEFAULT_STORE_SIZE)
+	if store.Movers[p] == nil {
+		store.Movers[p] = make([]Mover, 0, DEFAULT_STORE_SIZE)
 	}
-	store.Things[p] = append(store.Things[p], obj)
+	store.Movers[p] = append(store.Movers[p], obj)
 	err = nil
 	return
 }
 
-func remove(s []Thing, i int) []Thing {
+func remove(s []Mover, i int) []Mover {
 	s[len(s)-1], s[i] = s[i], s[len(s)-1]
 	return s[:len(s)-1]
 }
 
-func (store *MapThingStore) MoveObjectTo(obj Thing, p Position) (err error) {
+func (store *MapMoverStore) MoveObjectTo(obj Mover, p Position) (err error) {
 	const DEFAULT_STORE_SIZE = 3
-	if store.Things[p] == nil {
-		store.Things[p] = make([]Thing, 0, DEFAULT_STORE_SIZE)
+	if store.Movers[p] == nil {
+		store.Movers[p] = make([]Mover, 0, DEFAULT_STORE_SIZE)
 	}
 	origPos := obj.Position()
 	things, err := store.AtPosition(origPos)
@@ -77,34 +88,34 @@ func (store *MapThingStore) MoveObjectTo(obj Thing, p Position) (err error) {
 	for index, element := range things {
 		if(element == obj) {
 			things = remove(things , index)
-			store.Things[origPos] = things
+			store.Movers[origPos] = things
 			break
 		}
 	}
-	store.Things[p] = append(store.Things[p], obj)
+	store.Movers[p] = append(store.Movers[p], obj)
 
 	err = nil
 	return
 }
 
-func (store *MapThingStore) ShiftObjBy(obj Thing, p Position) (err error) {
+func (store *MapMoverStore) ShiftObjBy(obj Mover, p Position) (err error) {
 	newPos, err := obj.Position().RelativePosition(p.X, p.Y, p.Z)
 	store.MoveObjectTo(obj,newPos)
 	return
 }
 
-func (thing *BasicThing) Name() (s string) {
+func (thing *BasicMover) Name() (s string) {
 	return thing.name
 }
 
-func (thing *BasicThing) Symbol() (s string){
+func (thing *BasicMover) Symbol() (s string){
 	return thing.symbol
 }
 
-func (thing *BasicThing) Position() (p Position) {
+func (thing *BasicMover) Position() (p Position) {
 	return thing.position
 }
 
-func (thing *BasicThing) SetPosition(p Position) {
+func (thing *BasicMover) SetPosition(p Position) {
 	thing.position = p
 }

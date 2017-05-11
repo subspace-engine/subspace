@@ -1,18 +1,18 @@
 package world
 
 type Structure interface {
-	Thing
+	Mover
 }
 type StructureStore interface {
-	ThingStore
+	MoverStore
 }
 
 type BasicStructure struct {
-	BasicThing
+	BasicMover
 }
 
 type MapStructureStore struct {
-	MapThingStore
+	MapMoverStore
 }
 
 func NewStructure() (Structure) {

@@ -9,7 +9,7 @@ type World struct {
 	MainBase     *Base
 	Size         int
 	Terrain      *Terrain
-	Things       ThingStore
+	Things       MoverStore
 	Structures   StructureStore
 	Cursor       Position
 }
@@ -21,13 +21,13 @@ type Position struct {
 }
 
 type Base struct {
-	Name string
-	Avatar Thing
+	Name   string
+	Avatar Mover
 }
 
 type Colonist struct {
-	Name string
-	Avatar Thing
+	Name   string
+	Avatar Mover
 }
 
 func NewPosition(midpoint int) (pos Position) {
@@ -36,15 +36,15 @@ func NewPosition(midpoint int) (pos Position) {
 }
 
 func NewDefaultColonist() (*Colonist){
-	return &Colonist{"You", NewThing("Mark", "@" , Position{2,2,2})}
+	return &Colonist{"You", NewMover("Mark", "@" , Position{2,2,2})}
 }
 
 func NewDefaultBase() (*Base){
-	return &Base{Name : "Base Omicron", Avatar : NewThing("Base", "B", Position{2,2,2})}
+	return &Base{Name : "Base Omicron", Avatar : NewMover("Base", "B", Position{2,2,2})}
 }
 
 
-func (w *World) ShiftThing(thing Thing, pos Position) (err error) {
+func (w *World) ShiftThing(thing Mover, pos Position) (err error) {
 	w.Things.ShiftObjBy(thing, pos)
 	newPos, err := thing.Position().RelativePosition(pos.X, pos.Y, pos.Z)
 	thing.SetPosition(newPos)
@@ -114,7 +114,7 @@ func (w *World) GetSymbolOfWorldAt(p Position) (worldChar string, err error) {
 
 func (w *World) GetNamesOfTerrainsAndObjects(relPos Position) (name1 string,
 		name2 string,
-		things []Thing,
+		things []Mover,
 		isClear bool,
 		err error) {
 	pos, _ := w.Cursor.RelativePosition(relPos.X, relPos.Y, relPos.Z)

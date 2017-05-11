@@ -37,7 +37,7 @@ func (g *testGameManager) initializeTestWorld() {
 
 	w.GenerateTerrain()
 
-	thingStore := &world.MapThingStore{}
+	thingStore := &world.MapMoverStore{}
 	thingStore.Initialize()
 	w.Things = thingStore
 
@@ -56,7 +56,7 @@ func (g *testGameManager) initializeTestWorld() {
 	thingStore.AddObject(baseAvatar)
 
 	icePos, _ := world.NewPosition(mid).RelativePosition(-1,-1,0)
-	ice := world.NewThing("ice", "i", icePos)
+	ice := world.NewMover("ice", "i", icePos)
 	thingStore.AddObject(ice)
 
 	return

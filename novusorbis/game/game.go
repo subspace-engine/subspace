@@ -171,7 +171,7 @@ func (g *GameManager) CreateWorld() (err error) {
 
 	w.GenerateTerrain()
 
-	thingStore := &world.MapThingStore{}
+	thingStore := &world.MapMoverStore{}
 	thingStore.Initialize()
 	w.Things = thingStore
 
@@ -208,7 +208,7 @@ func (g *GameManager) CreateColonist() (mainColonist *world.Colonist) {
 	g.Println("What would you like to name your first colonist?")
 	name, _ := g.Read()
 
-	mainColonist = &world.Colonist{Name: name, Avatar:world.NewThing("You", "@", world.Position{2,2,2})}
+	mainColonist = &world.Colonist{Name: name, Avatar:world.NewMover("You", "@", world.Position{2,2,2})}
 	g.Println("Creating a colonist with the name: \"" + mainColonist.Name + "\", is this correct? (y/n)")
 	answer, _ := g.Read()
 	answer = strings.ToLower(answer)
@@ -250,7 +250,7 @@ type BaseFactory struct{
 
 func (b *BaseFactory) CreateBase() (base *world.Base) {
 	name := b.Ask("What would you like to name your base?")
-	base = &world.Base{Name: "Base" + name, Avatar: world.NewThing("Base " + name, "B", world.Position{2,2,2})}
+	base = &world.Base{Name: "Base" + name, Avatar: world.NewMover("Base " + name, "B", world.Position{2,2,2})}
 	isAnswerYes := b.AskYesNo("Naming your base: \"" + base.Name + "\", is this correct? (y/n)")
 
 	if (isAnswerYes) {
@@ -318,7 +318,7 @@ func (g *GameManager) Look(args []string) (err error) {
 		dir = g.GetDirection(dirString)
 	}
 	var name1, name2 string
-	var things []world.Thing
+	var things []world.Mover
 	var isClear bool
 
 	var pos world.Position
@@ -394,7 +394,7 @@ func (g *GameManager) Move(args []string) (err error) {
 		dir = g.GetDirection(dirString)
 	}
 	var name1, name2 string
-	var things []world.Thing
+	var things []world.Mover
 	var isClear bool
 
 	var pos world.Position
