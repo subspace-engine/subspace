@@ -43,6 +43,7 @@ func (g *GameManager) Start() {
 	// g.PrintLogo() TODO
 	g.InitializeCommandsMap()
 	g.SetUpDirectionMaps()
+	g.CreateWorld()
 	g.MainLoop()
 }
 
@@ -76,7 +77,6 @@ func (g *GameManager) InitializeCommandsMap() {
 }
 
 func (g *GameManager) MainLoop() {
-	g.StartNewGame()
 	Loop:
 	for {
 		if doExit := g.LoopStep() ; doExit != nil {
@@ -156,13 +156,6 @@ func (g *GameManager) PrintCommands(args []string) (err error) {
 	g.Print("The available commands are: ")
 	g.Println(strings.Join(keys, ", "))
 
-	err = nil
-	return
-}
-
-func (g *GameManager) StartNewGame() (err error) {
-	g.Println("Starting a new game")
-	g.CreateWorld()
 	err = nil
 	return
 }

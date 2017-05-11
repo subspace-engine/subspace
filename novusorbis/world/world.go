@@ -107,9 +107,6 @@ func (w *World) GetSymbolOfWorldAt(p Position) (worldChar string, err error) {
 	return
 }
 
-
-
-
 func (w *World) GetNamesOfTerrainsAndObjects(relPos Position) (name1 string,
 		name2 string,
 		things []Thing,
