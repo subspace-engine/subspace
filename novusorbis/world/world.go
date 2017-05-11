@@ -30,6 +30,11 @@ type Colonist struct {
 	Avatar Thing
 }
 
+func NewPosition(midpoint int) (pos Position) {
+	pos = Position{X: midpoint, Y: midpoint, Z: midpoint}
+	return
+}
+
 func NewDefaultColonist() (*Colonist){
 	return &Colonist{"You", NewThing("Mark", "@" , Position{2,2,2})}
 }

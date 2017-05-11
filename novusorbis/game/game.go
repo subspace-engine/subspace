@@ -40,7 +40,7 @@ type GameManager struct{
 }
 
 func (g *GameManager) Start() {
-	// g.PrintLogo() TODO
+	g.PrintLogo()
 	g.InitializeCommandsMap()
 	g.SetUpDirectionMaps()
 	g.CreateWorld()

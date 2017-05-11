@@ -50,6 +50,17 @@ func (store *MapThingStore) AddObjectAt(obj Thing, p Position) (err error) {
 	return
 }
 
+func (store *MapThingStore) AddObject(obj Thing) (err error) {
+	const DEFAULT_STORE_SIZE = 3
+	p := obj.Position()
+	if store.Things[p] == nil {
+		store.Things[p] = make([]Thing, 0, DEFAULT_STORE_SIZE)
+	}
+	store.Things[p] = append(store.Things[p], obj)
+	err = nil
+	return
+}
+
 func remove(s []Thing, i int) []Thing {
 	s[len(s)-1], s[i] = s[i], s[len(s)-1]
 	return s[:len(s)-1]

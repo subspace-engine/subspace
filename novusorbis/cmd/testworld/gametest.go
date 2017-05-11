@@ -53,7 +53,11 @@ func (g *testGameManager) initializeTestWorld() {
 
 	baseAvatar := g.World.MainBase.Avatar
 	baseAvatar.SetPosition(pos)
-	thingStore.AddObjectAt(baseAvatar, pos)
+	thingStore.AddObject(baseAvatar)
+
+	icePos, _ := world.NewPosition(mid).RelativePosition(-1,-1,0)
+	ice := world.NewThing("ice", "i", icePos)
+	thingStore.AddObject(ice)
 
 	return
 }
