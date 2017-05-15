@@ -74,6 +74,8 @@ func (g *GameManager) InitializeCommandsMap() {
 	g.CommandsMap["move"] = g.Move
 	g.CommandsMap["pos"] = g.Position
 	g.CommandsMap["draw"] = g.DrawWorld
+	g.CommandsMap["take"] = g.TakeObject
+	g.CommandsMap["inv"] = g.ShowInventory
 }
 
 func (g *GameManager) MainLoop() {
@@ -266,4 +268,39 @@ func (g *GameManager) CreateBase() (base *world.Base){
 	return
 }
 
+func (g *GameManager) TakeObject(args []string) (err error) {
+	// TODO specify which object(s) to take
+	// TODO differentiate between mobile and immobile objects
+	colonist := g.World.MainColonist
+	pos := colonist.Avatar.Position()
+	thingsHere, err := g.World.Things.AtPosition(pos)
+	if (len(thingsHere) <= 1) {
+		g.Println("Nothing to take.")
+		return
+	}
 
+	g.Println("Took: ")
+	for index, thing := range thingsHere {
+		if (thing == colonist.Avatar) {
+			continue
+		}
+		g.Println(strconv.Itoa(index) + ". " + thing.Name())
+		colonist.Inventory.AddObject(thing)
+		g.World.Things.Remove(thing, pos)
+	}
+	return
+}
+
+func (g *GameManager) ShowInventory(args []string) (err error) {
+	colonist := g.World.MainColonist
+	inventory := colonist.Inventory.GetContents()
+	if (len(inventory) == 0) {
+		g.Println("Inventory empty")
+		return
+	}
+	g.Println("Inventory: ")
+	for index, thing := range inventory {
+		g.Println(strconv.Itoa(index) + ". " + thing.Name())
+	}
+	return
+}

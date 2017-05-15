@@ -36,6 +36,7 @@ type MoverStore interface {
 	AddObjectAt(obj Mover, p Position) (err error)
 	MoveObjectTo(obj Mover, p Position) (err error)
 	ShiftObjBy(obj Mover, p Position) (err error)
+	Remove(obj Mover, p Position) (err error)
 }
 
 type MapMoverStore struct {
@@ -78,21 +79,25 @@ func remove(s []Mover, i int) []Mover {
 	return s[:len(s)-1]
 }
 
+func (store *MapMoverStore) Remove(obj Mover, p Position) (err error) {
+	things, err := store.AtPosition(p)
+	for index, element := range things {
+		if(element == obj) {
+			things = remove(things , index)
+			store.Movers[p] = things
+			return
+		}
+	}
+	return
+}
+
 func (store *MapMoverStore) MoveObjectTo(obj Mover, p Position) (err error) {
 	const DEFAULT_STORE_SIZE = 3
 	if store.Movers[p] == nil {
 		store.Movers[p] = make([]Mover, 0, DEFAULT_STORE_SIZE)
 	}
 	origPos := obj.Position()
-	things, err := store.AtPosition(origPos)
-
-	for index, element := range things {
-		if(element == obj) {
-			things = remove(things , index)
-			store.Movers[origPos] = things
-			break
-		}
-	}
+	store.Remove(obj, origPos)
 	store.Movers[p] = append(store.Movers[p], obj)
 
 	err = nil
@@ -119,4 +124,26 @@ func (thing *BasicMover) Position() (p Position) {
 
 func (thing *BasicMover) SetPosition(p Position) {
 	thing.position = p
+}
+
+
+type Container interface {
+	AddObject(thing NamedThing)
+	GetContents() (things []NamedThing)
+}
+
+type BasicContainer struct {
+	things []NamedThing
+}
+
+func NewContainer() (Container) {
+	return &BasicContainer{things : make([]NamedThing, 0, 4)}
+}
+
+func (c *BasicContainer) AddObject(thing NamedThing) {
+	c.things = append(c.things, thing)
+}
+
+func (c *BasicContainer) GetContents() ([]NamedThing){
+	return c.things
 }

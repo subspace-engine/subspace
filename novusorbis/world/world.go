@@ -28,6 +28,7 @@ type Base struct {
 type Colonist struct {
 	Name   string
 	Avatar Mover
+	Inventory Container
 }
 
 func NewPosition(midpoint int) (pos Position) {
@@ -36,13 +37,12 @@ func NewPosition(midpoint int) (pos Position) {
 }
 
 func NewDefaultColonist() (*Colonist){
-	return &Colonist{"You", NewMover("Mark", "@" , Position{2,2,2})}
+	return &Colonist{"You", NewMover("Mark", "@" , Position{2,2,2}), NewContainer()}
 }
 
 func NewDefaultBase() (*Base){
 	return &Base{Name : "Base Omicron", Avatar : NewStructure("Base", "B", Position{2,2,2})}
 }
-
 
 func (w *World) ShiftThing(thing Mover, pos Position) (err error) {
 	w.Things.ShiftObjBy(thing, pos)
