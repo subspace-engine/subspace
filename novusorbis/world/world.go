@@ -10,7 +10,7 @@ type World struct {
 	Size         int
 	Terrain      *Terrain
 	Things       MoverStore
-	Structures   StructureStore
+	Structures   MoverStore
 	Cursor       Position
 }
 
@@ -22,7 +22,7 @@ type Position struct {
 
 type Base struct {
 	Name   string
-	Avatar Mover
+	Avatar Structure
 }
 
 type Colonist struct {
@@ -40,7 +40,7 @@ func NewDefaultColonist() (*Colonist){
 }
 
 func NewDefaultBase() (*Base){
-	return &Base{Name : "Base Omicron", Avatar : NewMover("Base", "B", Position{2,2,2})}
+	return &Base{Name : "Base Omicron", Avatar : NewStructure("Base", "B", Position{2,2,2})}
 }
 
 

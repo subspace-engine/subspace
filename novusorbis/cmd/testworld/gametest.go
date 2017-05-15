@@ -41,7 +41,7 @@ func (g *testGameManager) initializeTestWorld() {
 	thingStore.Initialize()
 	w.Things = thingStore
 
-	w.Structures = world.NewStructureStore()
+	w.Structures = &world.MapMoverStore{}
 
 	w.MainColonist = g.CreateDefaultColonist() // TODO
 	w.MainBase = g.CreateDefaultBase() // TODO

@@ -4,6 +4,7 @@ type NamedThing interface {
 	Name() (s string)
 }
 
+// For now, a mover is anything with a position, even if it doesn't actually move
 type Mover interface {
 	NamedThing
 	Symbol() (s string)
@@ -16,7 +17,7 @@ type BasicNamedThing struct {
 }
 
 type BasicMover struct {
-	BasicNamedThing
+	NamedThing
 	symbol string
 	position Position
 }
@@ -26,7 +27,7 @@ func NewNamedThing(Name string) (NamedThing){
 }
 
 func NewMover(Name string, Symbol string, Position Position) (Mover) {
-	return &BasicMover{BasicNamedThing : NewNamedThing(Name), symbol: Symbol, position: Position}
+	return &BasicMover{NamedThing : NewNamedThing(Name), symbol: Symbol, position: Position}
 }
 
 type MoverStore interface {
@@ -104,7 +105,7 @@ func (store *MapMoverStore) ShiftObjBy(obj Mover, p Position) (err error) {
 	return
 }
 
-func (thing *BasicMover) Name() (s string) {
+func (thing *BasicNamedThing) Name() (s string) {
 	return thing.name
 }
 

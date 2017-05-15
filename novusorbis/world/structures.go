@@ -2,23 +2,35 @@ package world
 
 type Structure interface {
 	Mover
-}
-type StructureStore interface {
-	MoverStore
+	Container
 }
 
 type BasicStructure struct {
-	BasicMover
+	Mover
+	Container
 }
 
-type MapStructureStore struct {
-	MapMoverStore
+type Container interface {
+	AddObject(thing NamedThing)
+	GetContents() (things []NamedThing)
 }
 
-func NewStructure() (Structure) {
-	return &BasicStructure{}
+type BasicContainer struct {
+	things []NamedThing
 }
 
-func NewStructureStore() (StructureStore) {
-	return &MapStructureStore{}
+func NewStructure(name string, symbol string, position Position) (Structure) {
+	return &BasicStructure{NewMover(name, symbol, position), NewContainer()}
+}
+
+func NewContainer() (Container) {
+	return &BasicContainer{things : make([]NamedThing, 0, 4)}
+}
+
+func (c *BasicContainer) AddObject(thing NamedThing) {
+	c.things = append(c.things, thing)
+}
+
+func (c *BasicContainer) GetContents() ([]NamedThing){
+	return c.things
 }

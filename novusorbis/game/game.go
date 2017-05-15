@@ -95,9 +95,6 @@ func (g *GameManager) DrawWorld(args []string) (err error) {
 
 	g.Println(drawnTerrain)
 
-	drawnTerrain, _ = g.World.DrawnWorldAtZ(z-1)
-
-	g.Print(drawnTerrain)
 	return nil
 }
 
@@ -161,6 +158,8 @@ func (g *GameManager) PrintCommands(args []string) (err error) {
 }
 
 func (g *GameManager) CreateWorld() (err error) {
+	return nil // TODO
+	/*
 	w := &world.World{}
 	w.Size = 5
 	g.World = w
@@ -175,7 +174,7 @@ func (g *GameManager) CreateWorld() (err error) {
 	thingStore.Initialize()
 	w.Things = thingStore
 
-	w.Structures = world.NewStructureStore()
+	w.Structures = world.MapMoverStore{}
 
 	w.MainColonist = g.CreateDefaultColonist() // TODO
 	w.MainBase = g.CreateDefaultBase() // TODO
@@ -191,6 +190,7 @@ func (g *GameManager) CreateWorld() (err error) {
 
 	err = nil
 	return
+	*/
 }
 
 func (g *GameManager) CreateDefaultColonist() (mainColonist *world.Colonist) {
@@ -250,7 +250,7 @@ type BaseFactory struct{
 
 func (b *BaseFactory) CreateBase() (base *world.Base) {
 	name := b.Ask("What would you like to name your base?")
-	base = &world.Base{Name: "Base" + name, Avatar: world.NewMover("Base " + name, "B", world.Position{2,2,2})}
+	base = &world.Base{Name: "Base" + name, Avatar: world.NewStructure("Base " + name, "B", world.Position{2,2,2})}
 	isAnswerYes := b.AskYesNo("Naming your base: \"" + base.Name + "\", is this correct? (y/n)")
 
 	if (isAnswerYes) {
