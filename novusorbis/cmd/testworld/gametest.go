@@ -23,6 +23,7 @@ func main() {
 	t.initializeTestWorld()
 	t.InitializeCommandsMap()
 	t.SetUpDirectionMaps()
+	t.Println("Game started")
 	t.MainLoop()
 }
 

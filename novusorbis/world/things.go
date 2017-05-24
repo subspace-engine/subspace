@@ -1,5 +1,10 @@
 package world
 
+import (
+	"fmt"
+	"strconv"
+)
+
 type NamedThing interface {
 	Name() (s string)
 }
@@ -64,13 +69,7 @@ func (store *MapMoverStore) AddObjectAt(obj Mover, p Position) (err error) {
 }
 
 func (store *MapMoverStore) AddObject(obj Mover) (err error) {
-	const DEFAULT_STORE_SIZE = 3
-	p := obj.Position()
-	if store.Movers[p] == nil {
-		store.Movers[p] = make([]Mover, 0, DEFAULT_STORE_SIZE)
-	}
-	store.Movers[p] = append(store.Movers[p], obj)
-	err = nil
+	err = store.AddObjectAt(obj, obj.Position())
 	return
 }
 
@@ -80,11 +79,25 @@ func remove(s []Mover, i int) []Mover {
 }
 
 func (store *MapMoverStore) Remove(obj Mover, p Position) (err error) {
+	fmt.Printf("Removing object %v with name %v at position %v\n", obj, obj.Name(), p)
+	fmt.Printf("store.Movers[%v] at start: %v\n", p, store.Movers[p])
+
 	things, err := store.AtPosition(p)
+	fmt.Printf("At position are: %v\n", things)
+
 	for index, element := range things {
+		fmt.Printf("Obj %v is %v with name %v:\n", strconv.Itoa(index), element, element.Name())
 		if(element == obj) {
+			fmt.Printf("Found the object\n")
+			// TODO add error if object isn't there
+			fmt.Printf("things before: %v\n", things)
 			things = remove(things , index)
+			fmt.Printf("things after: %v\n", things)
+			fmt.Printf("store.Movers[%v] before: %v\n", p, store.Movers[p])
+
 			store.Movers[p] = things
+			fmt.Printf("store.Movers[%v] after: %v\n", p, store.Movers[p])
+
 			return
 		}
 	}
@@ -125,7 +138,6 @@ func (thing *BasicMover) Position() (p Position) {
 func (thing *BasicMover) SetPosition(p Position) {
 	thing.position = p
 }
-
 
 type Container interface {
 	AddObject(thing NamedThing)

@@ -7,6 +7,7 @@ import (
 	"time"
 	"github.com/subspace-engine/subspace/novusorbis/world"
 	"github.com/subspace-engine/subspace/novusorbis/ui"
+	"fmt"
 )
 
 const GAME_LOGO = `
@@ -279,8 +280,12 @@ func (g *GameManager) TakeObject(args []string) (err error) {
 		return
 	}
 
+	fmt.Printf("E Things here: %v\n", thingsHere)
+
 	g.Println("Took: ")
+
 	for index, thing := range thingsHere {
+		fmt.Printf("E Thing here number %v: %v with name %v\n", strconv.Itoa(index), thing, thing.Name())
 		if (thing == colonist.Avatar) {
 			continue
 		}
