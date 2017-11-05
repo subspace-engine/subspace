@@ -6,17 +6,17 @@ package term
 import "C"
 
 
-func initfunc() uint32 {
+func Init() uint32 {
 return 0
 }
 
-func termfunc() {
+func Terminate() {
 }
 
-func printfunc(text string) {
+func Print(text string) {
 C._puts(C.CString(text))
 }
 
-func readfunc() int {
+func Read() int {
 return int(c._getch())
 }

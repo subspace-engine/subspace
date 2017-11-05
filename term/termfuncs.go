@@ -19,7 +19,7 @@ import "C"
 
 import "unsafe"
 
-func initfunc() uint32 {
+func Init() uint32 {
 C.initscr()
 C.cbreak()
 C.noecho()
@@ -28,21 +28,21 @@ C.clear()
 return 0
 }
 
-func termfunc() {
+func Terminate() {
 C.endwin()
 }
 
-func printfunc(text string) {
+func Print(text string) {
 var ctext * C.char = C.CString(text)
 defer C.free(unsafe.Pointer(ctext))
 C.addstr(ctext)
 }
 
-func readfunc() int {
+func Read() int {
 return int(C.getch())
 }
 
-func readlinefunc() string {
+func Readln() string {
 var cbuffer * C.char = C.creadline()
 defer C.free(unsafe.Pointer(cbuffer))
 return C.GoString(cbuffer)
