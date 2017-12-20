@@ -12,7 +12,7 @@ func runTermbox() {
 
 	numX := 0
 	numY := 0
-	loop:
+loop:
 	for {
 		switch ev := termbox.PollEvent(); ev.Type {
 		case termbox.EventKey:
@@ -29,7 +29,7 @@ func runTermbox() {
 				numX += 1
 			}
 		}
-		termbox.SetCell(numX, numY, rune(48+((numX + numY)%10)), termbox.ColorGreen, termbox.ColorDefault)
+		termbox.SetCell(numX, numY, rune(48+((numX+numY)%10)), termbox.ColorGreen, termbox.ColorDefault)
 		termbox.Flush()
 	}
 
