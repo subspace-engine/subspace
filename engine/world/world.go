@@ -2,10 +2,16 @@ package world
 
 // World, a type intended to hold all the objects of a game and how they relate to each other.
 
-// UnsetDimention indicates when a world does not use a particular dimention, e.g. card games will use this for X, Y and ZSize, while side-scrolers will only use it for the ZSize
+import (
+	"fmt"
+)
+
+// UnsetDimention indicates when a world does not use a particular dimention, e.g. card games will use this for X, Y and ZSize, while 2-dimentional worlds will only use it for the ZSize
 const UnsetDimention = 0.0
 
-type TerrainType uint
+type TerrainType uint8
+
+const TerrainUnset = 0
 
 func NewTerrain(x, y, z int) [][][]TerrainType {
 	terrain := make([][][]TerrainType, x, x)
@@ -18,17 +24,17 @@ func NewTerrain(x, y, z int) [][][]TerrainType {
 	return terrain
 }
 
-func NewTiles(x, y, z, sf int) [][][]ObjectTile {
+func NewTiles(x, y, z, sf int) [][][]*ObjectTile {
 	o1 := scaleSize(x, sf)
 	o2 := scaleSize(y, sf)
 	o3 := scaleSize(z, sf)
-	tiles := make([][][]ObjectTile, o1, o1)
+	tiles := make([][][]*ObjectTile, o1, o1)
 	for i := range tiles {
-		tiles[i] = make([][]ObjectTile, o2, o2)
+		tiles[i] = make([][]*ObjectTile, o2, o2)
 		for j := 0; j < o3; j++ {
-			tiles[i][j] = make([]ObjectTile, o3, o3)
+			tiles[i][j] = make([]*ObjectTile, o3, o3)
 			for k := range tiles[i][j] {
-				tiles[i][j][k] = make([]Tile, 0, 0)
+				tiles[i][j][k] = &ObjectTile{X: i, Y: j, Z: k, Objects: make([]Tile, 0, 0)}
 			}
 		}
 	}
@@ -39,24 +45,32 @@ type Tile struct {
 	xOffset uint
 	yOffset uint
 	zOffset uint
-	// todo: hold a base object
+	Object  interface{}
 }
 
-type ObjectTile []Tile
+type ObjectTile struct {
+	X, Y, Z int
+	Objects []Tile
+}
+
+func (ot *ObjectTile) Add(t Tile) {
+	ot.Objects = append(ot.Objects, t)
+}
 
 type World struct {
 	XSize float64
 	YSize float64
 	ZSize float64
+	SF    int // scale factor of sectors to object tiles
 
 	//below types can be optimised later to not be multidimentional arrays
 	// Terrain represents any cube of world space that requires unique feature types, setting this to nil disables associated logic
 	Terrain     [][][]TerrainType
-	ObjectTiles [][][]ObjectTile
+	ObjectTiles [][][]*ObjectTile
 }
 
 func NewWorld(x, y, z int, hasTerrain bool, sf int) *World {
-	var tiles [][][]ObjectTile
+	var tiles [][][]*ObjectTile
 	var terrain [][][]TerrainType
 	if x != 0 || y != 0 || z != 0 {
 		if hasTerrain {
@@ -66,8 +80,7 @@ func NewWorld(x, y, z int, hasTerrain bool, sf int) *World {
 			tiles = NewTiles(x, y, z, sf)
 		}
 	}
-	world := &World{XSize: float64(x), YSize: float64(y), ZSize: float64(z), Terrain: terrain, ObjectTiles: tiles}
-	return world
+	return &World{XSize: float64(x), YSize: float64(y), ZSize: float64(z), SF: sf, Terrain: terrain, ObjectTiles: tiles}
 }
 
 func scaleSize(orig, sf int) int {
@@ -79,4 +92,87 @@ func scaleSize(orig, sf int) int {
 		size++
 	}
 	return size
+}
+
+func (w *World) AddObject(x, y, z int, obj interface{}) error {
+	//todo, bounds check
+	const offset = 0 // assume scale 1 for now, todo other sfs
+	w.ObjectTiles[x][y][z].Add(Tile{offset, offset, offset, obj})
+	return nil
+}
+
+type ActorFunc func(actor *Actor, args ...interface{})
+
+type ActWith int
+
+const (
+	withNil     ActWith = 0
+	WithTerrain ActWith = 1
+	WithTile    ActWith = 2
+	WithObjects ActWith = 3
+)
+
+type Actor struct {
+	World        *World
+	TerrainActor ActorFunc
+	TileActor    ActorFunc
+	ObjectActor  ActorFunc
+	Order        []ActWith
+	X            int
+	Y            int
+	Z            int
+	Objects      []*Tile
+	Terrain      TerrainType
+	CoordsSet    bool
+}
+
+func (a *Actor) Act(args ...interface{}) {
+	if len(a.Order) == 0 {
+		panic("Action order must be specified")
+	}
+	setAttrs := func() {
+		if !a.CoordsSet {
+			// first 3 arguments must be an x, y, z coord
+			if len(args) >= 3 {
+				a.setCoords(args[0], args[1], args[2])
+				args = args[3:]
+				if a.World.Terrain != nil {
+					tt := a.World.Terrain[a.X][a.Y][a.Z]
+					if tt == TerrainUnset {
+						panic(fmt.Sprintf("found unspecified terrain at %d, %d, %d", a.X, a.Y, a.Z))
+					}
+					a.Terrain = tt
+				}
+				return
+			}
+			panic(fmt.Sprintf("only %d arguments found: %v", len(args), args))
+		}
+	}
+
+	for _, fType := range a.Order {
+		switch fType {
+		case WithTerrain:
+			setAttrs()
+			a.TerrainActor(a, args)
+		case WithTile:
+			setAttrs()
+			a.TileActor(a, args)
+		case WithObjects:
+		default:
+			panic(fmt.Sprintf("Unspecified action order %d\n", fType))
+		}
+	}
+}
+
+func (a *Actor) setCoords(xi, yi, zi interface{}) {
+	assertAndSet := func(i interface{}) int {
+		v, ok := i.(int)
+		if !ok {
+			panic(fmt.Sprintf("unspecified type for x value %v", xi))
+		}
+		return v
+	}
+	a.X = assertAndSet(xi)
+	a.Y = assertAndSet(yi)
+	a.Z = assertAndSet(zi)
 }
