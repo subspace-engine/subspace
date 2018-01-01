@@ -65,8 +65,9 @@ type World struct {
 
 	//below types can be optimised later to not be multidimentional arrays
 	// Terrain represents any cube of world space that requires unique feature types, setting this to nil disables associated logic
-	Terrain     [][][]TerrainType
-	ObjectTiles [][][]*ObjectTile
+	Terrain       [][][]TerrainType
+	ObjectTiles   [][][]*ObjectTile
+	GlobalObjects map[string]interface{}
 }
 
 func NewWorld(x, y, z int, hasTerrain bool, sf int) *World {
@@ -80,7 +81,7 @@ func NewWorld(x, y, z int, hasTerrain bool, sf int) *World {
 			tiles = NewTiles(x, y, z, sf)
 		}
 	}
-	return &World{XSize: float64(x), YSize: float64(y), ZSize: float64(z), SF: sf, Terrain: terrain, ObjectTiles: tiles}
+	return &World{XSize: float64(x), YSize: float64(y), ZSize: float64(z), SF: sf, Terrain: terrain, ObjectTiles: tiles, GlobalObjects: make(map[string]interface{})}
 }
 
 func scaleSize(orig, sf int) int {
@@ -110,6 +111,7 @@ const (
 	WithTerrain ActWith = 1
 	WithTile    ActWith = 2
 	WithObjects ActWith = 3
+	WithGlobals ActWith = 4
 )
 
 type Actor struct {
@@ -117,6 +119,7 @@ type Actor struct {
 	TerrainActor ActorFunc
 	TileActor    ActorFunc
 	ObjectActor  ActorFunc
+	GlobalActor  ActorFunc
 	Order        []ActWith
 	X            int
 	Y            int
@@ -124,6 +127,17 @@ type Actor struct {
 	Objects      []*Tile
 	Terrain      TerrainType
 	CoordsSet    bool
+}
+
+// pass actors by value to reuse them without changing the basis Actor
+// I think this is what we usually want
+// pass using a pointer to mutate
+func (w *World) BuildActor(terrainActor, tileActor, objectActor ActorFunc, order ...ActWith) Actor {
+	return Actor{World: w,
+		TerrainActor: terrainActor,
+		TileActor:    tileActor,
+		ObjectActor:  objectActor,
+		Order:        order}
 }
 
 func (a *Actor) Act(args ...interface{}) {
