@@ -68,19 +68,26 @@ func boardString(w *world.World) string {
 		s = s + "\n"
 		for x := 0; x < 9; x++ {
 			t := w.Terrain[x][y][0]
-			switch t {
-			case edge:
-				s = s + "E"
-			case blank:
-				s = s + "B"
-			case peg:
-				s = s + "P"
-			case 0:
-				s = s + "0"
-			default:
+			sq := squareString(t)
+			if sq == "" {
 				panic(fmt.Sprintf("found tile of type %d at index %d, %d\n", t, x, y))
 			}
+			s = s + sq
 		}
 	}
 	return s
+}
+
+func squareString(t world.TerrainType) string {
+	switch t {
+	case edge:
+		return "E"
+	case blank:
+		return "B"
+	case peg:
+		return "P"
+	case 0:
+		return "0"
+	}
+	return ""
 }
