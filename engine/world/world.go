@@ -167,10 +167,10 @@ func (a *Actor) Act(args ...interface{}) {
 		switch fType {
 		case WithTerrain:
 			setAttrs()
-			a.TerrainActor(a, args)
+			a.TerrainActor(a, args...)
 		case WithTile:
 			setAttrs()
-			a.TileActor(a, args)
+			a.TileActor(a, args...)
 		case WithObjects:
 		default:
 			panic(fmt.Sprintf("Unspecified action order %d\n", fType))
