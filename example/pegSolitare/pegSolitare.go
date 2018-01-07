@@ -11,12 +11,11 @@ func main() {
 	board := world.NewWorld(9, 9, 1, true, 0)
 	reset(board)
 	fmt.Println(boardString(board))
-	act := board.BuildActor(solitareMove, nil, nil, world.WithTerrain)
+	act := board.BuildActor(solitareMove)
 	act.X = 4
 	act.Y = 4
 	act.CoordsSet = true
-	act2 := board.BuildActor(pegsRemaining, nil, nil, world.WithTerrain)
-	act2.CoordsSet = true
+	act2 := board.BuildActor(pegsRemaining)
 
 	// startServer()
 

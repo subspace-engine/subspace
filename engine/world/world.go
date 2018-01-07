@@ -4,6 +4,7 @@ package world
 
 import (
 	"fmt"
+	"time"
 )
 
 // UnsetDimention indicates when a world does not use a particular dimention, e.g. card games will use this for X, Y and ZSize, while 2-dimentional worlds will only use it for the ZSize
@@ -57,6 +58,20 @@ func (ot *ObjectTile) Add(t Tile) {
 	ot.Objects = append(ot.Objects, t)
 }
 
+type Config struct {
+	XSize int
+	YSize int
+	ZSize int
+
+	// Update rate is the rate at wich the update loop is run
+	UpdateRate  time.Time
+	UseTerrain  bool
+	UseTiles    bool
+	ScaleFactor int
+
+	// todo, more
+}
+
 type World struct {
 	XSize float64
 	YSize float64
@@ -104,77 +119,30 @@ func (w *World) AddObject(x, y, z int, obj interface{}) error {
 
 type ActorFunc func(actor *Actor, args ...interface{})
 
-type ActWith int
-
-const (
-	withNil     ActWith = 0
-	WithTerrain ActWith = 1
-	WithTile    ActWith = 2
-	WithObjects ActWith = 3
-	WithGlobals ActWith = 4
-)
-
 type Actor struct {
-	World        *World
-	TerrainActor ActorFunc
-	TileActor    ActorFunc
-	ObjectActor  ActorFunc
-	GlobalActor  ActorFunc
-	Order        []ActWith
-	X            int
-	Y            int
-	Z            int
-	Objects      []*Tile
-	Terrain      TerrainType
-	CoordsSet    bool
+	World     *World
+	Actions   []ActorFunc
+	X         int
+	Y         int
+	Z         int
+	Objects   []*Tile
+	Terrain   TerrainType
+	CoordsSet bool
 }
 
 // pass actors by value to reuse them without changing the basis Actor
 // I think this is what we usually want
 // pass using a pointer to mutate
-func (w *World) BuildActor(terrainActor, tileActor, objectActor ActorFunc, order ...ActWith) Actor {
-	return Actor{World: w,
-		TerrainActor: terrainActor,
-		TileActor:    tileActor,
-		ObjectActor:  objectActor,
-		Order:        order}
+func (w *World) BuildActor(actions ...ActorFunc) Actor {
+	return Actor{World: w, Actions: actions}
 }
 
 func (a *Actor) Act(args ...interface{}) {
-	if len(a.Order) == 0 {
-		panic("Action order must be specified")
+	if len(a.Actions) == 0 {
+		panic("No actions supplied to actor")
 	}
-	setAttrs := func() {
-		if !a.CoordsSet {
-			// first 3 arguments must be an x, y, z coord
-			if len(args) >= 3 {
-				a.setCoords(args[0], args[1], args[2])
-				args = args[3:]
-				if a.World.Terrain != nil {
-					tt := a.World.Terrain[a.X][a.Y][a.Z]
-					if tt == TerrainUnset {
-						panic(fmt.Sprintf("found unspecified terrain at %d, %d, %d", a.X, a.Y, a.Z))
-					}
-					a.Terrain = tt
-				}
-				return
-			}
-			panic(fmt.Sprintf("only %d arguments found: %v", len(args), args))
-		}
-	}
-
-	for _, fType := range a.Order {
-		switch fType {
-		case WithTerrain:
-			setAttrs()
-			a.TerrainActor(a, args...)
-		case WithTile:
-			setAttrs()
-			a.TileActor(a, args...)
-		case WithObjects:
-		default:
-			panic(fmt.Sprintf("Unspecified action order %d\n", fType))
-		}
+	for _, action := range a.Actions {
+		action(a, args...)
 	}
 }
 
