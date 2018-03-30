@@ -14,7 +14,7 @@ type TerrainType uint8
 
 const TerrainUnset = 0
 
-func NewTerrain(x, y, z int) [][][]TerrainType {
+func NewTerrain(x, y, z uint32) [][][]TerrainType {
 	terrain := make([][][]TerrainType, x, x)
 	for i := range terrain {
 		terrain[i] = make([][]TerrainType, y, y)
@@ -25,14 +25,14 @@ func NewTerrain(x, y, z int) [][][]TerrainType {
 	return terrain
 }
 
-func NewTiles(x, y, z, sf int) [][][]*ObjectTile {
+func NewTiles(x, y, z, sf uint32) [][][]*ObjectTile {
 	o1 := scaleSize(x, sf)
 	o2 := scaleSize(y, sf)
 	o3 := scaleSize(z, sf)
 	tiles := make([][][]*ObjectTile, o1, o1)
 	for i := range tiles {
 		tiles[i] = make([][]*ObjectTile, o2, o2)
-		for j := 0; j < o3; j++ {
+		for j := 0; j < int(o3); j++ {
 			tiles[i][j] = make([]*ObjectTile, o3, o3)
 			for k := range tiles[i][j] {
 				tiles[i][j][k] = &ObjectTile{X: i, Y: j, Z: k, Objects: make([]Tile, 0, 0)}
@@ -59,24 +59,23 @@ func (ot *ObjectTile) Add(t Tile) {
 }
 
 type Config struct {
-	XSize int
-	YSize int
-	ZSize int
+	XSize uint32
+	YSize uint32
+	ZSize uint32
+	ScaleFactor uint32
 
 	// Update rate is the rate at wich the update loop is run
 	UpdateRate  time.Time
 	UseTerrain  bool
 	UseTiles    bool
-	ScaleFactor int
-
 	// todo, more
 }
 
 type World struct {
-	XSize float64
-	YSize float64
-	ZSize float64
-	SF    int // scale factor of sectors to object tiles
+	XSize uint32
+	YSize uint32
+	ZSize uint32
+	SF    uint32 // scale factor of sectors to object tiles
 
 	//below types can be optimised later to not be multidimentional arrays
 	// Terrain represents any cube of world space that requires unique feature types, setting this to nil disables associated logic
@@ -85,7 +84,7 @@ type World struct {
 	GlobalObjects map[string]interface{}
 }
 
-func NewWorld(x, y, z int, hasTerrain bool, sf int) *World {
+func NewWorld(x, y, z uint32, hasTerrain bool, sf uint32) *World {
 	var tiles [][][]*ObjectTile
 	var terrain [][][]TerrainType
 	if x != 0 || y != 0 || z != 0 {
@@ -96,10 +95,10 @@ func NewWorld(x, y, z int, hasTerrain bool, sf int) *World {
 			tiles = NewTiles(x, y, z, sf)
 		}
 	}
-	return &World{XSize: float64(x), YSize: float64(y), ZSize: float64(z), SF: sf, Terrain: terrain, ObjectTiles: tiles, GlobalObjects: make(map[string]interface{})}
+	return &World{XSize: x, YSize: y, ZSize: z, SF: sf, Terrain: terrain, ObjectTiles: tiles, GlobalObjects: make(map[string]interface{})}
 }
 
-func scaleSize(orig, sf int) int {
+func scaleSize(orig, sf uint32) uint32 {
 	if orig < sf {
 		return 1
 	}
