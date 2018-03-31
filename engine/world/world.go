@@ -129,7 +129,7 @@ type Actor struct {
 	CoordsSet bool
 }
 
-// pass actors by value to reuse them without changing the basis Actor
+// pass actors by value to reuse them without changing the base Actor
 // I think this is what we usually want
 // pass using a pointer to mutate
 func (w *World) BuildActor(actions ...ActorFunc) Actor {
@@ -149,7 +149,7 @@ func (a *Actor) setCoords(xi, yi, zi interface{}) {
 	assertAndSet := func(i interface{}) int {
 		v, ok := i.(int)
 		if !ok {
-			panic(fmt.Sprintf("unspecified type for x value %v", xi))
+			panic(fmt.Sprintf("unspecified type for coord value %v", xi))
 		}
 		return v
 	}
