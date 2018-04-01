@@ -5,12 +5,31 @@ package engine;
 // actions taken by a client
 message  Action {
 	string desc=1; //simple as possible for now
+	SoundNames SoundRequest = 2;
 }
 
 message ServerUpdate {
 	string desc=1; //simple as possible for now
+	SoundNames AllSounds= 2;
+	SoundData SoundData = 3;
 }
 
 service MessageStream {
 	rpc UpdateStream(stream Action) returns(stream ServerUpdate) {}
+}
+// servers send a list of all sounds a game has at startup
+// a client replies with a list of sounds it does not have yet by making a new instance or mutating the received list
+message SoundNames{
+	repeated string names = 2;
+}
+
+// servers construct SoundData at the request of a client
+// Clients do not have to expect SoundData unless a request for it have been made
+message SoundData {
+repeated Sound Sounds = 1;
+}
+
+message Sound {
+string Name = 1;
+bytes Data = 2;
 }
