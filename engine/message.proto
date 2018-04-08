@@ -8,9 +8,8 @@ message  Action {
 	// a client replies with a list of sounds it does not have yet by making a new instance or mutating the received list
 	repeated string SoundRequest = 2;
 
-	// servers construct SoundData at the request of a client
-	// Clients do not have to expect SoundData unless a request for it have been made
-	repeated Sound Sounds = 3; 
+// Actions should be registered in the game content. todo: possibly send along metadata (what format?)
+uint32 Action = 3;
 }
 
 message ServerUpdate {
@@ -18,10 +17,16 @@ message ServerUpdate {
 
 	// servers send a list of all sounds a game has at startup
 	repeated string AllSounds= 2;
+	// servers construct SoundData at the request of a client
+	// Clients do not have to expect SoundData unless a request for it have been made
+	repeated Sound Sounds = 3; 
+
+	// todo: game event representation
 }
 
 service MessageStream {
-	rpc UpdateStream(stream Action) returns(stream ServerUpdate) {}
+	rpc UpdateStream(stream Action) returns(stream ServerUpdate);
+}
 
 message Sound {
 	string Name = 1;
