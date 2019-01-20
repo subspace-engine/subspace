@@ -28,13 +28,13 @@ func (tile BasicTile)String() string {
 
 var nothing = model.MakePassableThing("Nothing", "Nothing", false)
 type Tiles [][][]Tile
-type Movers [][][][]model.Mover
+type Things [][][][]*model.Thing
 
 type BasicSpace struct {
 	tiles    Tiles
-	movers   Movers
+	things   Things
 	TileSize float64
-	moverMul int
+	thingMul int
 }
 
 func MakeTiles(width int, height int, depth int, tile Tile) Tiles {
@@ -51,22 +51,22 @@ func MakeTiles(width int, height int, depth int, tile Tile) Tiles {
 	return tiles
 }
 
-func MakeMovers(width int, height int, depth int) Movers {
-	movers := make([][][][]model.Mover, width)
+func MakeThings(width int, height int, depth int) Things {
+	things := make([][][][]*model.Thing, width)
 	for i := 0; i < width; i++ {
-		movers[i] = make([][][]model.Mover, height)
+		things[i] = make([][][]*model.Thing, height)
 		for j := 0; j < height; j++ {
-			movers[i][j] = make([][]model.Mover, depth)
+			things[i][j] = make([][]*model.Thing, depth)
 			for k := 0; k < depth; k++ {
-				movers[i][j][k] = make([]model.Mover, 0)
+				things[i][j][k] = make([]*model.Thing, 0)
 			}
 		}
 	}
-	return movers
+	return things
 }
 
-func MakeBasicSpace(width int, height int, depth int, size float64, moverMul int, tile Tile) Space {
-	space := BasicSpace{MakeTiles(width, height, depth, tile), MakeMovers(width/moverMul, height/moverMul, depth/moverMul), size, moverMul}
+func MakeBasicSpace(width int, height int, depth int, size float64, thingMul int, tile Tile) Space {
+	space := BasicSpace{MakeTiles(width, height, depth, tile), MakeThings(width/thingMul, height/thingMul, depth/thingMul), size, thingMul}
 	return space
 }
 
@@ -74,12 +74,12 @@ func MakeDefaultSpace(width int, height int, depth int) Space {
 	return MakeBasicSpace(width, height, depth, 1.0, 10, MakeBasicTile(nothing))
 }
 
-func (self Movers) remove(x int, y int, z int, mover model.Mover) {
+func (self Things) remove(x int, y int, z int, thing *model.Thing) {
 	if len(self[x][y][z]) == 1 {
-		self[x][y][z] = make([]model.Mover, 0)
+		self[x][y][z] = make([]*model.Thing, 0)
 	} else {
 		for i := 0; i < len(self[x][y][z]); i++ {
-			if self[x][y][z][i] == mover {
+			if self[x][y][z][i] == thing {
 				self[x][y][z][i] = self[x][y][z][len(self[x][y][z])-1]
 				break
 			}
@@ -88,40 +88,43 @@ func (self Movers) remove(x int, y int, z int, mover model.Mover) {
 	}
 }
 
-func (self Movers) add(x int, y int, z int, mover model.Mover) {
-	self[x][y][z] = append(self[x][y][z], mover)
+func (self Things) add(x int, y int, z int, thing *model.Thing) {
+	self[x][y][z] = append(self[x][y][z], thing)
 }
 
-func (self BasicSpace) Move(mover model.Mover, x float64, y float64, z float64) int {
-	tx := int(mover.X() / self.TileSize)
-	ty := int(mover.Y() / self.TileSize)
-	tz := int(mover.Z() / self.TileSize)
-	nx := int((mover.X() + x) / self.TileSize)
-	ny := int((mover.Y() + y) / self.TileSize)
-	nz := int((mover.Z() + z) / self.TileSize)
+func (self BasicSpace) Move(thing *model.Thing, x float64, y float64, z float64) int {
+	tx := int(thing.X() / self.TileSize)
+	ty := int(thing.Y() / self.TileSize)
+	tz := int(thing.Z() / self.TileSize)
+	nx := int((thing.X() + x) / self.TileSize)
+	ny := int((thing.Y() + y) / self.TileSize)
+	nz := int((thing.Z() + z) / self.TileSize)
 	if self.Encloses(nx, ny, nz) {
 		if self.tiles[nx][ny][nz].IsPassable() {
-			self.shiftMover(mover, tx, ty, tz, nx, ny, nz)
-			mover.SetX(mover.X() + x)
-			mover.SetY(mover.Y() + y)
-			mover.SetZ(mover.Z() + z)
-			return 0
+			self.shiftThing(thing, tx, ty, tz, nx, ny, nz)
+			thing.SetX(thing.X() + x)
+			thing.SetY(thing.Y() + y)
+			thing.SetZ(thing.Z() + z)
+						return 0
 		}
+		tile :=self.tiles[nx][ny][nz]
+		thing.Act(model.Action{thing, "bump", tile.TileObject().(*model.Thing), nil})
+		tile.TileObject().Act(model.Action{tile.TileObject().(*model.Thing), "bump", thing, nil})
 		return 1
 	}
 	return -1
 }
 
-func (self *BasicSpace) shiftMover(mover model.Mover, x int, y int, z int, newX int, newY int, newZ int) {
-	moverMul := self.moverMul
-	if x/moverMul != newX/moverMul || y/moverMul != newY/moverMul || z/moverMul != newZ/moverMul {
-		self.movers.remove(x/moverMul, y/moverMul, z/moverMul, mover)
-		self.movers.add(newX/moverMul, newY/moverMul, newZ/moverMul, mover)
+func (self *BasicSpace) shiftThing(thing *model.Thing, x int, y int, z int, newX int, newY int, newZ int) {
+	thingMul := self.thingMul
+	if x/thingMul != newX/thingMul || y/thingMul != newY/thingMul || z/thingMul != newZ/thingMul {
+		self.things.remove(x/thingMul, y/thingMul, z/thingMul, thing)
+		self.things.add(newX/thingMul, newY/thingMul, newZ/thingMul, thing)
 	}
 }
 
-func (self BasicSpace) GetTile(mover model.Mover) Tile {
-	return self.tiles[int(mover.X()/self.TileSize)][int(mover.Y()/self.TileSize)][int(mover.Z()/self.TileSize)]
+func (self BasicSpace) GetTile(thing *model.Thing) Tile {
+	return self.tiles[int(thing.X()/self.TileSize)][int(thing.Y()/self.TileSize)][int(thing.Z()/self.TileSize)]
 }
 
 func (self BasicSpace) SetTile(x int, y int, z int, tile Tile) {
@@ -132,8 +135,8 @@ func (self BasicSpace) Encloses(x int, y int, z int) bool {
 	return x >= 0 && x < len(self.tiles) && y >= 0 && y < len(self.tiles[x]) && z >= 0 && z < len(self.tiles[x][y])
 }
 
-func (self BasicSpace) Add(x int, y int, z int, mover model.Mover) {
+func (self BasicSpace) Add(x int, y int, z int, thing *model.Thing) {
 	if self.Encloses(x, y, z) {
-		self.movers.add(x/self.moverMul, y/self.moverMul, z/self.moverMul, mover)
+		self.things.add(x/self.thingMul, y/self.thingMul, z/self.thingMul, thing)
 	}
 }

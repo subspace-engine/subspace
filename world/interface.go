@@ -12,15 +12,16 @@ type Point interface {
 }
 
 type Tile interface {
+	TileObject() model.TileObject
 	Type() int
 	IsPassable() bool
 	String() string
 }
 
 type Space interface {
-	Move(mover model.Mover, x float64, y float64, z float64) int
-	GetTile(mover model.Mover) Tile
+	Move(*model.Thing, float64, float64, float64) int
+	GetTile(mover *model.Thing) Tile
 	SetTile(x int, y int, z int, tile Tile)
 	Encloses(x int, y int, z int) bool
-	Add(x int, y int, z int, mover model.Mover)
+	Add(x int, y int, z int, mover *model.Thing)
 }

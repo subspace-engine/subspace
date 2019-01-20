@@ -34,4 +34,5 @@ type TileObject interface {
 	Namer
 	Describer
 	Passer
+	Acter
 }

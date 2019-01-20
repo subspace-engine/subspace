@@ -1,11 +1,12 @@
 package model
 
+import "fmt"
 
 type Action struct {
-	Target Thing
+	Target *Thing
 	Tag string
-	Dobj Thing
-	Iobj Thing
+	Dobj *Thing
+	Iobj *Thing
 }
 
 type Acter interface {
@@ -24,10 +25,11 @@ func MakeActionManager() * ActionManager {
 func (self*ActionManager)RegisterAction(tag string, response func (Action)int) {
 	val, prs :=self.actions[tag]
 	if ! prs {
-		val =make([]func(Action)int, 10, 10)
+		val =make([]func(Action)int, 0)
 	}
 	val = append(val, response)
 	self.actions[tag]=val
+	fmt.Println(val)
 }
 
 func (self*ActionManager)Act(action Action) {
@@ -36,7 +38,7 @@ func (self*ActionManager)Act(action Action) {
 		return
 	}
 	for _,response := range val {
-		if response(action)==0 {
+		if response(action)!=0 {
 			return
 		}
 	}

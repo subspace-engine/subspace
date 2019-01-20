@@ -26,6 +26,12 @@ func runTiles() {
 me.SetX(50)
 	me.SetY(0)
 	me.SetZ(50)
+	me.RegisterAction("bump", func(action model.Action) int {
+		if action.Dobj!=nil {
+			con.Println("You bumped into " + action.Dobj.Name()+".")
+		}
+		return 0
+	})
 	makeWorld(tiles)
 	tiles.Add(50,0,50,me)
 running :=true
