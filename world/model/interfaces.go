@@ -18,3 +18,20 @@ type Describer interface {
 	Description() string
 	SetDescription(string)
 }
+
+type Typer interface {
+	Type() int
+	SetType(int)
+}
+
+type Passer interface {
+	Passable() bool
+	SetPassable(bool)
+}
+
+type TileObject interface {
+	Typer
+	Namer
+	Describer
+	Passer
+}

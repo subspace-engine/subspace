@@ -2,36 +2,31 @@ package world
 
 import "github.com/subspace-engine/subspace/world/model"
 
-const (
-	Nothing = iota
-	Empty
-	Wall
-	Floor
-	Ground
-	LastType
-)
-
 type BasicTile struct {
-	tileType int
+	tileObject model.TileObject
 }
 
-func MakeBasicTile(tileType int) Tile {
-	return BasicTile{tileType}
+func (self BasicTile)TileObject() model.TileObject {
+	return self.tileObject
+}
+
+func MakeBasicTile(tileObject model.TileObject) Tile {
+	return BasicTile{tileObject}
 }
 
 func (self BasicTile) IsPassable() bool {
-	return self.Type() != Wall && self.Type() != Nothing
+	return self.TileObject().Passable()
 }
 
 func (tile BasicTile)Type() int {
-	return tile.tileType
+	return tile.TileObject().Type()
 }
 
 func (tile BasicTile)String() string {
-	types := []string {"nothing", "empty", "wall", "floor", "ground"}
-	return types[tile.Type()]
+	return tile.TileObject().Name()
 }
 
+var nothing = model.MakePassableThing("Nothing", "Nothing", false)
 type Tiles [][][]Tile
 type Movers [][][][]model.Mover
 
@@ -76,7 +71,7 @@ func MakeBasicSpace(width int, height int, depth int, size float64, moverMul int
 }
 
 func MakeDefaultSpace(width int, height int, depth int) Space {
-	return MakeBasicSpace(width, height, depth, 1.0, 10, MakeBasicTile(Nothing))
+	return MakeBasicSpace(width, height, depth, 1.0, 10, MakeBasicTile(nothing))
 }
 
 func (self Movers) remove(x int, y int, z int, mover model.Mover) {
