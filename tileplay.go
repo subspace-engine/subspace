@@ -34,7 +34,7 @@ running :=true
 				case 27:
 				running=false
 			case ' ':
-				con.Println(fmt.Sprintf("%f, %f, %f\n",me.X(), me.Y(), me.Z()))
+				con.Println(fmt.Sprintf("%.1f, %.1f, %.1f\n",me.X(), me.Y(), me.Z()))
 				case km.KeyUp:
 				tiles.Move(me, 0, 0, -1)
 			con.Println(tiles.GetTile(me).String())

@@ -38,10 +38,11 @@ type Thing struct {
 	name string
 	description string
 	passable bool
+	actions *ActionManager
 }
 
 func MakeBasicThing(name string, description string) *Thing {
-	return &Thing {0, MoveObj{0,0,0}, name, description, false}
+	return &Thing {0, MoveObj{0,0,0}, name, description, false, MakeActionManager()}
 }
 
 func MakePassableThing(name string, description string, passable bool) *Thing {
@@ -87,4 +88,13 @@ func (self*Thing)Type() int {
 
 func (self*Thing)SetType(objType int) {
 	self.objType=objType
+}
+
+
+func (self*Thing)Act(action Action) {
+	self.actions.Act(action)
+}
+
+func (self *Thing)RegisterAction(tag string, response func(Action)int) {
+	self.actions.RegisterAction(tag, response)
 }
