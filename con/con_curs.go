@@ -27,6 +27,7 @@ wscrl(stdscr,1);
 */
 import "C"
 
+import "fmt"
 import "unsafe"
 
 
@@ -72,10 +73,12 @@ C.endwin()
 }
 
 func (*CursesConsole)Print(text string) {
-	var ctext * C.char = C.CString(text)
+/*	var ctext * C.char = C.CString(text)
 defer C.free(unsafe.Pointer(ctext))
 C.addstr(ctext)
 	C.refresh()
+*/
+	fmt.Print(text)
 }
 
 func (self *CursesConsole)Println(text string) {
