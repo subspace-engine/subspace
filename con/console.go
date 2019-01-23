@@ -1,9 +1,9 @@
 package con
 
 type Keymap struct {
-	KeyUp int
-	KeyDown int
-	KeyLeft int
+	KeyUp    int
+	KeyDown  int
+	KeyLeft  int
 	KeyRight int
 }
 
@@ -17,9 +17,8 @@ type Console interface {
 	MakeEventProc() EventProc
 	ReadKey() int
 	ReadLine() string
-	IsKeyDown(int)
 	Print(string)
-		Println(string)
+	Println(string)
 	Map() Keymap
 	Destroy()
 }

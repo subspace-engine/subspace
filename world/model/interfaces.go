@@ -29,10 +29,11 @@ type Passer interface {
 	SetPassable(bool)
 }
 
-type TileObject interface {
+type Thing interface {
 	Typer
 	Namer
 	Describer
 	Passer
 	Acter
+	Mover
 }
