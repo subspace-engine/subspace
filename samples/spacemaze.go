@@ -118,9 +118,17 @@ func runTiles() {
 	tiles := world.MakeDefaultSpace(500, 500, 500)
 	me := model.MakeBasicThing("you", "As good looking as ever.")
 	me.SetPosition(util.Vec3{1, 0, 1})
+	chair := model.MakeBasicThing("a chair", "Just a basic chair")
+	chair.SetPosition(util.Vec3{2, 0, 1})
 	me.RegisterAction("bump", func(action model.Action) int {
 		if action.Dobj != nil {
 			cn.Println("You bumped into " + action.Dobj.Name() + ".")
+		}
+		return 0
+	})
+	me.RegisterAction("encounter", func(action model.Action) int {
+		if action.Dobj != nil {
+			cn.Println(fmt.Sprintf("You encountered %s", action.Dobj.Name()))
 		}
 		return 0
 	})
@@ -132,6 +140,7 @@ func runTiles() {
 	})
 	makeWorld(tiles)
 	tiles.Add(me)
+	tiles.Add(chair)
 	running := true
 	proc.SetKeyDown(func(key int) {
 		switch key {

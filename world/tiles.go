@@ -7,10 +7,19 @@ import (
 
 type BasicTile struct {
 	model.Thing
+	position util.Vec3
 }
 
 func MakeBasicTile(tileObject model.Thing) Tile {
-	return BasicTile{tileObject}
+	return &BasicTile{tileObject, util.Vec3{0, 0, 0}}
+}
+
+func (tile BasicTile) Position() util.Vec3 {
+	return tile.position
+}
+
+func (tile *BasicTile) SetPosition(pos util.Vec3) {
+	tile.position = pos
 }
 
 var nothing = model.MakePassableThing("Nothing", "Nothing", false)
@@ -19,10 +28,11 @@ type Tiles [][][]Tile
 type Things [][][][]model.Thing
 
 type BasicSpace struct {
-	tiles    Tiles
-	things   Things
-	TileSize float64
-	thingMul float64
+	tiles       Tiles
+	things      Things
+	TileSize    float64
+	thingMul    float64
+	model.Thing // to conform to the Thing interface, allows us to give spaces names and descriptions
 }
 
 func MakeTiles(width int, height int, depth int, tile Tile) Tiles {
@@ -54,8 +64,8 @@ func MakeThings(width int, height int, depth int) Things {
 }
 
 func MakeBasicSpace(width int, height int, depth int, size float64, thingMul float64, tile Tile) Space {
-	space := BasicSpace{MakeTiles(width, height, depth, tile), MakeThings(width/int(thingMul), height/int(thingMul), depth/int(thingMul)), size, thingMul}
-	return space
+	space := BasicSpace{MakeTiles(width, height, depth, tile), MakeThings(width/int(thingMul), height/int(thingMul), depth/int(thingMul)), size, thingMul, model.MakeBasicThing("World", "The world")}
+	return &space
 }
 
 func MakeDefaultSpace(width int, height int, depth int) Space {
@@ -96,6 +106,7 @@ func (self BasicSpace) Move(thing model.Thing, pos util.Vec3) int {
 			thing.SetPosition(thing.Position().Add(pos))
 			go tile.Act(model.Action{tile, "step", thing, nil})
 			go thing.Act(model.Action{thing, "step", tile, nil})
+			self.calculateEncounters(tile, thing, newpos)
 			return 0
 		}
 		go thing.Act(model.Action{thing, "bump", tile, nil})
@@ -122,6 +133,8 @@ func (self BasicSpace) GetTile(thing model.Thing) Tile {
 
 func (self BasicSpace) SetTile(x int, y int, z int, tile Tile) {
 	self.tiles[x][y][z] = tile
+	tile.SetPosition(util.Vec3{float64(x), float64(y), float64(z)})
+	tile.SetLocation(self)
 }
 
 func (self BasicSpace) TileAt(x int, y int, z int) Tile {
@@ -136,7 +149,42 @@ func (self BasicSpace) Encloses(pos util.Vec3) bool {
 }
 
 func (self BasicSpace) Add(thing model.Thing) {
-	if self.Encloses(thing.Position()) {
-		self.things.add(thing.Position().Mul(self.thingMul), thing)
+	if self.Encloses(thing.Position().Div(self.TileSize)) {
+		self.things.add(thing.Position().Div(self.TileSize).Div(self.thingMul), thing)
+	}
+}
+
+func (self *BasicSpace) thingsOnTile(x int, y int, z int) []model.Thing {
+	children := make([]model.Thing, 0, 0)
+	tilePosition := util.Vec3{float64(x), float64(y), float64(z)}
+	thingLocation := tilePosition.Div(self.thingMul)
+	for _, val := range self.things[int(thingLocation.X)][int(thingLocation.Y)][int(thingLocation.Z)] {
+		if val.Position().Div(self.TileSize).Equals(tilePosition) {
+			children = append(children, val)
+		}
+	}
+	return children
+}
+
+func (tile BasicTile) Children() []model.Thing {
+	space, err := tile.Location().(BasicSpace)
+	if !err {
+		return make([]model.Thing, 0, 0)
+	}
+	pos := tile.Position()
+	return space.thingsOnTile(int(pos.X), int(pos.Y), int(pos.Z))
+}
+
+func (space BasicSpace) IsRoot() bool {
+	return true
+}
+
+func (self *BasicSpace) calculateEncounters(tile Tile, thing model.Thing, pos util.Vec3) {
+	children := tile.Children()
+	for _, val := range children {
+		if val != thing {
+			thing.Act(model.Action{tile, "encounter", val, nil})
+			val.Act(model.Action{tile, "arrived", thing, nil})
+		}
 	}
 }
