@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/subspace-engine/subspace/con"
+	"github.com/subspace-engine/subspace/util"
 	"github.com/subspace-engine/subspace/world"
 	"github.com/subspace-engine/subspace/world/model"
 	"math/rand"
@@ -114,11 +115,9 @@ func runTiles() {
 	km := cn.Map()
 	proc := cn.MakeEventProc()
 	rand.Seed(time.Now().Unix())
-	tiles := world.MakeDefaultSpace(100, 100, 100)
+	tiles := world.MakeDefaultSpace(500, 500, 500)
 	me := model.MakeBasicThing("you", "As good looking as ever.")
-	me.SetX(1)
-	me.SetY(0)
-	me.SetZ(1)
+	me.SetPosition(util.Vec3{1, 0, 1})
 	me.RegisterAction("bump", func(action model.Action) int {
 		if action.Dobj != nil {
 			cn.Println("You bumped into " + action.Dobj.Name() + ".")
@@ -132,22 +131,22 @@ func runTiles() {
 		return 0
 	})
 	makeWorld(tiles)
-	tiles.Add(1, 0, 1, me)
+	tiles.Add(me)
 	running := true
 	proc.SetKeyDown(func(key int) {
 		switch key {
 		case 27:
 			running = false
 		case ' ':
-			cn.Println(fmt.Sprintf("%.1f, %.1f, %.1f\n", me.X(), me.Y(), me.Z()))
+			cn.Println(fmt.Sprintf("%.1f, %.1f, %.1f\n", me.Position().X, me.Position().Y, me.Position().Z))
 		case km.KeyUp:
-			tiles.Move(me, 0, 0, -1)
+			tiles.Move(me, util.Vec3{0, 0, -1})
 		case km.KeyDown:
-			tiles.Move(me, 0, 0, 1)
+			tiles.Move(me, util.Vec3{0, 0, 1})
 		case km.KeyLeft:
-			tiles.Move(me, -1, 0, 0)
+			tiles.Move(me, util.Vec3{-1, 0, 0})
 		case km.KeyRight:
-			tiles.Move(me, 1, 0, 0)
+			tiles.Move(me, util.Vec3{1, 0, 0})
 		}
 	})
 	for running {

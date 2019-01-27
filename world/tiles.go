@@ -1,6 +1,9 @@
 package world
 
-import "github.com/subspace-engine/subspace/world/model"
+import (
+	"github.com/subspace-engine/subspace/util"
+	"github.com/subspace-engine/subspace/world/model"
+)
 
 type BasicTile struct {
 	model.Thing
@@ -19,7 +22,7 @@ type BasicSpace struct {
 	tiles    Tiles
 	things   Things
 	TileSize float64
-	thingMul int
+	thingMul float64
 }
 
 func MakeTiles(width int, height int, depth int, tile Tile) Tiles {
@@ -50,8 +53,8 @@ func MakeThings(width int, height int, depth int) Things {
 	return things
 }
 
-func MakeBasicSpace(width int, height int, depth int, size float64, thingMul int, tile Tile) Space {
-	space := BasicSpace{MakeTiles(width, height, depth, tile), MakeThings(width/thingMul, height/thingMul, depth/thingMul), size, thingMul}
+func MakeBasicSpace(width int, height int, depth int, size float64, thingMul float64, tile Tile) Space {
+	space := BasicSpace{MakeTiles(width, height, depth, tile), MakeThings(width/int(thingMul), height/int(thingMul), depth/int(thingMul)), size, thingMul}
 	return space
 }
 
@@ -59,7 +62,10 @@ func MakeDefaultSpace(width int, height int, depth int) Space {
 	return MakeBasicSpace(width, height, depth, 1.0, 10, MakeBasicTile(nothing))
 }
 
-func (self Things) remove(x int, y int, z int, thing model.Thing) {
+func (self Things) remove(pos util.Vec3, thing model.Thing) {
+	x := int(pos.X)
+	y := int(pos.Y)
+	z := int(pos.Z)
 	if len(self[x][y][z]) == 1 {
 		self[x][y][z] = make([]model.Thing, 0)
 	} else {
@@ -73,26 +79,23 @@ func (self Things) remove(x int, y int, z int, thing model.Thing) {
 	}
 }
 
-func (self Things) add(x int, y int, z int, thing model.Thing) {
+func (self Things) add(pos util.Vec3, thing model.Thing) {
+	x := int(pos.X)
+	y := int(pos.Y)
+	z := int(pos.Z)
 	self[x][y][z] = append(self[x][y][z], thing)
 }
 
-func (self BasicSpace) Move(thing model.Thing, x float64, y float64, z float64) int {
-	tx := int(thing.X() / self.TileSize)
-	ty := int(thing.Y() / self.TileSize)
-	tz := int(thing.Z() / self.TileSize)
-	nx := int((thing.X() + x) / self.TileSize)
-	ny := int((thing.Y() + y) / self.TileSize)
-	nz := int((thing.Z() + z) / self.TileSize)
-	if self.Encloses(nx, ny, nz) {
-		tile := self.tiles[nx][ny][nz]
+func (self BasicSpace) Move(thing model.Thing, pos util.Vec3) int {
+	tilepos := thing.Position().Div(self.TileSize)
+	newpos := thing.Position().Add(pos).Div(self.TileSize)
+	if self.Encloses(newpos) {
+		tile := self.tiles[int(newpos.X)][int(newpos.Y)][int(newpos.Z)]
 		if tile.Passable() {
-			self.shiftThing(thing, tx, ty, tz, nx, ny, nz)
-			thing.SetX(thing.X() + x)
-			thing.SetY(thing.Y() + y)
-			thing.SetZ(thing.Z() + z)
-			go thing.Act(model.Action{thing, "step", tile, nil})
+			self.shiftThing(thing, tilepos, newpos)
+			thing.SetPosition(thing.Position().Add(pos))
 			go tile.Act(model.Action{tile, "step", thing, nil})
+			go thing.Act(model.Action{thing, "step", tile, nil})
 			return 0
 		}
 		go thing.Act(model.Action{thing, "bump", tile, nil})
@@ -102,16 +105,19 @@ func (self BasicSpace) Move(thing model.Thing, x float64, y float64, z float64) 
 	return -1
 }
 
-func (self *BasicSpace) shiftThing(thing model.Thing, x int, y int, z int, newX int, newY int, newZ int) {
+func (self *BasicSpace) shiftThing(thing model.Thing, pos util.Vec3, newpos util.Vec3) {
 	thingMul := self.thingMul
-	if x/thingMul != newX/thingMul || y/thingMul != newY/thingMul || z/thingMul != newZ/thingMul {
-		self.things.remove(x/thingMul, y/thingMul, z/thingMul, thing)
-		self.things.add(newX/thingMul, newY/thingMul, newZ/thingMul, thing)
+	if !pos.Div(thingMul).Equals(newpos.Div(thingMul)) {
+		self.things.remove(pos.Div(thingMul), thing)
+		self.things.add(newpos.Div(thingMul), thing)
 	}
 }
 
 func (self BasicSpace) GetTile(thing model.Thing) Tile {
-	return self.tiles[int(thing.X()/self.TileSize)][int(thing.Y()/self.TileSize)][int(thing.Z()/self.TileSize)]
+	x := int(thing.Position().X / self.TileSize)
+	y := int(thing.Position().Y / self.TileSize)
+	z := int(thing.Position().Z / self.TileSize)
+	return self.tiles[x][y][z]
 }
 
 func (self BasicSpace) SetTile(x int, y int, z int, tile Tile) {
@@ -121,12 +127,16 @@ func (self BasicSpace) SetTile(x int, y int, z int, tile Tile) {
 func (self BasicSpace) TileAt(x int, y int, z int) Tile {
 	return self.tiles[x][y][z]
 }
-func (self BasicSpace) Encloses(x int, y int, z int) bool {
+
+func (self BasicSpace) Encloses(pos util.Vec3) bool {
+	x := int(pos.X)
+	y := int(pos.Y)
+	z := int(pos.Z)
 	return x >= 0 && x < len(self.tiles) && y >= 0 && y < len(self.tiles[x]) && z >= 0 && z < len(self.tiles[x][y])
 }
 
-func (self BasicSpace) Add(x int, y int, z int, thing model.Thing) {
-	if self.Encloses(x, y, z) {
-		self.things.add(x/self.thingMul, y/self.thingMul, z/self.thingMul, thing)
+func (self BasicSpace) Add(thing model.Thing) {
+	if self.Encloses(thing.Position()) {
+		self.things.add(thing.Position().Mul(self.thingMul), thing)
 	}
 }

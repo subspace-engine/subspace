@@ -1,38 +1,10 @@
 package model
 
-type MoveObj struct {
-	x float64
-	y float64
-	z float64
-}
-
-func (self *MoveObj) X() float64 {
-	return self.x
-}
-
-func (self *MoveObj) Y() float64 {
-	return self.y
-}
-
-func (self *MoveObj) Z() float64 {
-	return self.z
-}
-
-func (self *MoveObj) SetX(x float64) {
-	self.x = x
-}
-
-func (self *MoveObj) SetY(y float64) {
-	self.y = y
-}
-
-func (self *MoveObj) SetZ(z float64) {
-	self.z = z
-}
+import "github.com/subspace-engine/subspace/util"
 
 type BasicThing struct {
 	objType int
-	Mover
+	Shape
 	name        string
 	description string
 	passable    bool
@@ -40,7 +12,7 @@ type BasicThing struct {
 }
 
 func MakeBasicThing(name string, description string) Thing {
-	return &BasicThing{0, &MoveObj{0, 0, 0}, name, description, false, MakeActionManager()}
+	return &BasicThing{0, &Point{util.Vec3{0, 0, 0}}, name, description, false, MakeActionManager()}
 }
 
 func MakePassableThing(name string, description string, passable bool) Thing {
