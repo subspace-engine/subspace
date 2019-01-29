@@ -1,6 +1,9 @@
 package model
 
-import "github.com/subspace-engine/subspace/util"
+import (
+	"github.com/subspace-engine/subspace/util"
+	"math"
+)
 
 type basicLocater struct {
 	location Thing
@@ -47,24 +50,28 @@ type BasicThing struct {
 	name        string
 	description string
 	passable    bool
-	actions     *ActionManager
+	Actor
 	Locater
 }
 
-func MakeBasicThing(name string, description string) Thing {
+func MakeBasicThing(name string, description string) *BasicThing {
 	return &BasicThing{0, &Point{util.Vec3{0, 0, 0}}, name, description, false, MakeActionManager(), makeLocater()}
 }
 
-func MakePassableThing(name string, description string, passable bool) Thing {
+func MakePassableThing(name string, description string, passable bool) *BasicThing {
 	t := MakeBasicThing(name, description)
 	t.SetPassable(passable)
 	return t
 }
 
-func MakeTypedThing(objType int, name string, description string, passable bool) Thing {
+func MakeTypedThing(objType int, name string, description string, passable bool) *BasicThing {
 	t := MakePassableThing(name, description, passable)
 	t.SetType(objType)
 	return t
+}
+
+func (self BasicThing) Move(obj Thing, pos util.Vec3) int {
+	return 1 // not implemented for basic thing
 }
 
 func (self *BasicThing) Name() string {
@@ -99,14 +106,43 @@ func (self *BasicThing) SetType(objType int) {
 	self.objType = objType
 }
 
-func (self *BasicThing) Act(action Action) {
-	self.actions.Act(action)
-}
-
-func (self *BasicThing) RegisterAction(tag string, response func(Action) int) {
-	self.actions.RegisterAction(tag, response)
-}
-
 func (thing BasicThing) IsRoot() bool {
 	return false
+}
+
+type MobileThing struct {
+	*BasicThing
+	stepSize  float64
+	direction float64
+}
+
+func MakeMobileThing(name string, description string) *MobileThing {
+	t := &MobileThing{MakeBasicThing(name, description), 1, 0}
+	t.RegisterAction("move", func(action Action) int {
+		pos := util.Vec3{math.Sin(t.direction) * t.stepSize,
+			0,
+			-math.Cos(t.direction) * t.stepSize}
+		if t.Location() != nil {
+			t.Location().Move(t, pos)
+			return 1
+		}
+		return 0
+	})
+	return t
+}
+
+func (self MobileThing) StepSize() float64 {
+	return self.stepSize
+}
+
+func (self *MobileThing) SetStepSize(size float64) {
+	self.stepSize = size
+}
+
+func (self MobileThing) Direction() float64 {
+	return self.direction
+}
+
+func (self *MobileThing) SetDirection(direction float64) {
+	self.direction = direction
 }

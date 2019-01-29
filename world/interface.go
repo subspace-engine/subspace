@@ -10,11 +10,12 @@ type Tile interface {
 }
 
 type Space interface {
-	Move(model.Thing, util.Vec3) int
 	GetTile(model.Thing) Tile
 	SetTile(x int, y int, z int, tile Tile)
 	Encloses(util.Vec3) bool
 	TileAt(x int, y int, z int) Tile
 	Add(model.Thing)
 	thingsOnTile(int, int, int) []model.Thing
+	Remove(model.Thing)
+	model.Thing
 }

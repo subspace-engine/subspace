@@ -104,7 +104,7 @@ func (self BasicSpace) Move(thing model.Thing, pos util.Vec3) int {
 		if tile.Passable() {
 			self.shiftThing(thing, tilepos, newpos)
 			thing.SetPosition(thing.Position().Add(pos))
-			go tile.Act(model.Action{tile, "step", thing, nil})
+			go tile.Act(model.Action{thing, "step", tile, nil})
 			go thing.Act(model.Action{thing, "step", tile, nil})
 			self.calculateEncounters(tile, thing, newpos)
 			return 0
@@ -151,6 +151,7 @@ func (self BasicSpace) Encloses(pos util.Vec3) bool {
 func (self BasicSpace) Add(thing model.Thing) {
 	if self.Encloses(thing.Position().Div(self.TileSize)) {
 		self.things.add(thing.Position().Div(self.TileSize).Div(self.thingMul), thing)
+		thing.SetLocation(self)
 	}
 }
 
@@ -183,8 +184,13 @@ func (self *BasicSpace) calculateEncounters(tile Tile, thing model.Thing, pos ut
 	children := tile.Children()
 	for _, val := range children {
 		if val != thing {
-			thing.Act(model.Action{tile, "encounter", val, nil})
-			val.Act(model.Action{tile, "arrived", thing, nil})
+			go thing.Act(model.Action{tile, "encounter", val, nil})
+			go val.Act(model.Action{tile, "arrived", thing, nil})
 		}
 	}
+}
+
+func (space *BasicSpace) Remove(thing model.Thing) {
+	pos := thing.Position().Div(space.TileSize).Div(space.thingMul)
+	space.things.remove(pos, thing)
 }

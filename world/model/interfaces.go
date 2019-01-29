@@ -1,5 +1,7 @@
 package model
 
+import "github.com/subspace-engine/subspace/util"
+
 type Namer interface {
 	Name() string
 	SetName(string)
@@ -13,6 +15,10 @@ type Describer interface {
 type Typer interface {
 	Type() int
 	SetType(int)
+}
+
+type Mover interface {
+	Move(Thing, util.Vec3) int
 }
 
 type Passer interface {
@@ -33,8 +39,9 @@ type Thing interface {
 	Namer
 	Describer
 	Passer
-	Acter
+	Actor
 	Locater
+	Mover
 	Shape
 	IsRoot() bool
 }
