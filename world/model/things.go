@@ -70,8 +70,8 @@ func MakeTypedThing(objType int, name string, description string, passable bool)
 	return t
 }
 
-func (self BasicThing) Move(obj Thing, pos util.Vec3) int {
-	return 1 // not implemented for basic thing
+func (self BasicThing) Move(obj Thing, pos util.Vec3) bool {
+	return false // not implemented for basic thing
 }
 
 func (self *BasicThing) Name() string {
@@ -110,39 +110,57 @@ func (thing BasicThing) IsRoot() bool {
 	return false
 }
 
-type MobileThing struct {
+func (self *BasicThing) Say(text string) {
+	// Send it up to the world to handle
+	if self.Location() != nil {
+		self.Location().Say(text)
+	}
+}
+
+func (self *BasicThing) Actions() Actor {
+	return self.Actor
+}
+
+type BasicMobileThing struct {
 	*BasicThing
 	stepSize  float64
 	direction float64
 }
 
-func MakeMobileThing(name string, description string) *MobileThing {
-	t := &MobileThing{MakeBasicThing(name, description), 1, 0}
-	t.RegisterAction("move", func(action Action) int {
-		pos := util.Vec3{math.Sin(t.direction) * t.stepSize,
-			0,
-			-math.Cos(t.direction) * t.stepSize}
-		if t.Location() != nil {
-			t.Location().Move(t, pos)
-			return 1
+func MakeMobileThing(name string, description string) MobileThing {
+	t := &BasicMobileThing{MakeBasicThing(name, description), 1, 0}
+	t.RegisterAction("move", func(action Action) bool {
+		if action.Source == nil {
+			return false
 		}
-		return 0
+		thing, ok := action.Source.(MobileThing)
+		if !ok {
+			return false
+		}
+
+		pos := util.Vec3{math.Sin(t.direction)*t.stepSize + 0.000001,
+			0,
+			-math.Cos(t.direction)*t.stepSize + 0.000001}
+		if thing.Location() != nil {
+			return thing.Location().Move(thing, pos)
+		}
+		return false
 	})
 	return t
 }
 
-func (self MobileThing) StepSize() float64 {
+func (self BasicMobileThing) StepSize() float64 {
 	return self.stepSize
 }
 
-func (self *MobileThing) SetStepSize(size float64) {
+func (self *BasicMobileThing) SetStepSize(size float64) {
 	self.stepSize = size
 }
 
-func (self MobileThing) Direction() float64 {
+func (self BasicMobileThing) Direction() float64 {
 	return self.direction
 }
 
-func (self *MobileThing) SetDirection(direction float64) {
+func (self *BasicMobileThing) SetDirection(direction float64) {
 	self.direction = direction
 }

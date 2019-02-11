@@ -18,7 +18,7 @@ type Typer interface {
 }
 
 type Mover interface {
-	Move(Thing, util.Vec3) int
+	Move(Thing, util.Vec3) bool
 }
 
 type Passer interface {
@@ -34,6 +34,10 @@ type Locater interface {
 	RemoveChild(Thing)
 }
 
+type Sayer interface { // for message handling and reporting of events
+	Say(text string)
+}
+
 type Thing interface {
 	Typer
 	Namer
@@ -44,4 +48,14 @@ type Thing interface {
 	Mover
 	Shape
 	IsRoot() bool
+	Sayer
+	Actions() Actor
+}
+
+type MobileThing interface {
+	Thing
+	StepSize() float64
+	SetStepSize(float64)
+	Direction() float64
+	SetDirection(float64)
 }

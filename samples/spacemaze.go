@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/subspace-engine/subspace/con"
+	"github.com/subspace-engine/subspace/snd"
 	"github.com/subspace-engine/subspace/util"
 	"github.com/subspace-engine/subspace/world"
 	"github.com/subspace-engine/subspace/world/model"
@@ -13,6 +14,14 @@ import (
 )
 
 var cn con.Console
+
+func getTileAhead(tiles world.Space, thing model.MobileThing) world.Tile {
+	pos := thing.Position()
+	pos.X += math.Sin(thing.Direction())
+	pos.Z -= math.Cos(thing.Direction() + 0.000001)
+	tile := tiles.TileAt(int(pos.X), int(pos.Y), int(pos.Z))
+	return tile
+}
 
 func isOpen(tile world.Tile) bool {
 	return tile.Name() == "floor" || tile.Name() == "intersection" || tile.Name() == "Tee intersection" || tile.Name() == "doorway"
@@ -35,13 +44,14 @@ func makeShip(ship world.Space, tiles world.Space) {
 		ship.SetTile(4, 0, i, world.MakeBasicTile(model.MakePassableThing("floor", "Metal floor", true)))
 	}
 	exit := model.MakePassableThing("Exit", "The exit", true)
-	exit.RegisterAction("step", func(action model.Action) int {
+	exit.RegisterAction("step", func(action model.Action) bool {
 		if action.Source != nil {
 			ship.Remove(action.Source)
 			action.Source.SetPosition(util.Vec3{1, 0, 2})
 			tiles.Add(action.Source)
+			action.Source.Say(fmt.Sprintf("Tile at 2,0,1: %t\n", tiles.TileAt(2, 0, 1)))
 		}
-		return 0
+		return true
 	})
 	ship.SetTile(4, 0, 1, world.MakeBasicTile(exit))
 }
@@ -58,9 +68,9 @@ func makeWorld(space world.Space) {
 	tee := model.MakePassableThing("tee intersection", "Tee intersection with a branching path", true)
 	doorway := model.MakePassableThing("doorway", "A doorway into another room", true)
 	hole := model.MakePassableThing("Hole", "A hole in dhe ground", true)
-	hole.RegisterAction("step", func(action model.Action) int {
+	hole.RegisterAction("step", func(action model.Action) bool {
 		cn.Println("You stepped into a hole. You die.")
-		return 0
+		return true
 	})
 	for i := 0; i < 100; i++ {
 		for j := 0; j < 100; j++ {
@@ -139,7 +149,31 @@ reader:
 	}
 }
 
+func playFloorSounds(pos util.Vec3, dir float64, space world.Space) {
+	i := snd.PlaySound("footstep.ogg")
+	snd.SetPosition(i, pos)
+	left := pos.Add(util.VecFromDirection(dir - math.Pi/2))
+	right := pos.Add(util.VecFromDirection(dir + math.Pi/2))
+	time.Sleep(time.Millisecond * 100)
+	if space.Encloses(left) {
+		tile := space.TileAt(int(left.X), int(left.Y), int(left.Z))
+		if tile.Passable() {
+			i := snd.PlaySound("footstep.wav")
+			snd.SetPosition(i, left)
+		}
+	}
+	if space.Encloses(right) {
+		tile := space.TileAt(int(right.X), int(right.Y), int(right.Z))
+		if tile.Passable() {
+			i := snd.PlaySound("footstep.wav")
+			snd.SetPosition(i, right)
+		}
+	}
+}
+
 func runTiles() {
+	snd.Init()
+	//go snd.PlaySound("/home/rkruger/audio/dingdong.wav")
 	cn = con.MakeTextConsole()
 	km := cn.Map()
 	proc := cn.MakeEventProc()
@@ -150,40 +184,56 @@ func runTiles() {
 	ship.SetDescription("Looks like a space ship of some kind")
 	ship.SetPassable(true)
 	makeShip(ship, tiles)
-	ship.RegisterAction("step", func(action model.Action) int {
-		cn.Println("Entering ship")
-		if action.Source != nil {
-			cn.Println(fmt.Sprintf("%s are being transported", action.Source.Name()))
-			tiles.Remove(action.Source)
-			action.Source.SetPosition(util.Vec3{5, 0, 2})
-			ship.Add(action.Source)
+	ship.RegisterAction("step", func(action model.Action) bool {
+		if action.Source == nil {
+			return false
 		}
-		return 0
+		action.Source.Say("Entering ship")
+		action.Source.Say(fmt.Sprintf("%s are being transported", action.Source.Name()))
+		tiles.Remove(action.Source)
+		action.Source.SetPosition(util.Vec3{5, 0, 2})
+		ship.Add(action.Source)
+		return true
 	})
-	me := model.MakeMobileThing("you", "As good looking as ever.")
+	me := model.MakePlayer("you", "As good looking as ever.")
+	snd.SetListenerDirection(0)
+	me.RegisterPrintFunc(cn.Println)
+	//	me := model.MakeMobileThing("you", "As good looking as ever.")
 	me.SetPosition(util.Vec3{10, 0, 10})
 	chair := model.MakeBasicThing("a chair", "Just a basic chair")
 	chair.SetPosition(util.Vec3{8, 0, 4})
-	me.RegisterAction("bump", func(action model.Action) int {
+	me.RegisterAction("bump", func(action model.Action) bool {
 		if action.Dobj != nil {
-			cn.Println("You bumped into " + action.Dobj.Name() + ".")
+			action.Source.Say("You bumped into " + action.Dobj.Name() + ".")
+			sound := snd.PlaySound("wall.wav")
+			snd.SetPosition(sound, action.Dobj.Position())
 		}
-		return 0
+		return true
 	})
-	me.RegisterPostaction("encounter", func(action model.Action) int {
+	me.RegisterPostaction("encounter", func(action model.Action) bool {
 		if action.Dobj != nil {
-			cn.Println(fmt.Sprintf("You encountered %s", action.Dobj.Name()))
+			cn.Println("you encountered %s." + action.Dobj.Name())
 		}
-		return 0
+		return true
 	})
-	me.RegisterAction("step", func(action model.Action) int {
-		if action.Dobj != nil {
-			cn.Println(action.Dobj.Name())
+	me.RegisterPostaction("move", func(action model.Action) bool {
+		if action.Source == nil {
+			return true
 		}
-		return 0
+		loc := action.Source.Location()
+		if loc == nil {
+			return true
+		}
+		snd.SetListenerPosition(me.Position())
+		go playFloorSounds(me.Position(), me.Direction(), tiles)
+		return true
 	})
 	makeWorld(tiles)
-	tiles.SetTile(2, 0, 2, ship)
+	machine := world.MakeBasicTile(model.MakePassableThing("Machine", "Some kind of machine", false))
+	tiles.SetTile(2, 0, 2, machine)
+	machinesound := snd.PlaySound("machine.wav")
+	snd.SetLooping(machinesound, true)
+	snd.SetPosition(machinesound, machine.Position())
 	tiles.Add(me)
 	tiles.Add(chair)
 	running := true
@@ -191,6 +241,11 @@ func runTiles() {
 		switch key {
 		case 27:
 			running = false
+		case 'd':
+			me.Say(fmt.Sprintf("Direction %d, radians %fPi\n", int(me.Direction()/(math.Pi*2)*360), me.Direction()/math.Pi))
+		case 'l':
+			tile := getTileAhead(tiles, me)
+			me.Say(fmt.Sprintf("Ahead: %s at %f, %f, %f\n", tile.Name(), tile.Position().X, tile.Position().Y, tile.Position().Z))
 		case ' ':
 			cn.Println(fmt.Sprintf("%.1f, %.1f, %.1f\n", me.Position().X, me.Position().Y, me.Position().Z))
 		case km.KeyUp:
@@ -201,9 +256,11 @@ func runTiles() {
 			me.SetDirection(me.Direction() - math.Pi/2)
 			me.SetDirection(math.Mod(math.Pi*2+me.Direction(), (math.Pi * 2)))
 			printDirection(me.Direction())
+			snd.SetListenerDirection(me.Direction())
 		case km.KeyRight:
 			me.SetDirection(me.Direction() + math.Pi/2)
 			me.SetDirection(math.Mod(math.Pi*2+me.Direction(), (math.Pi * 2)))
+			snd.SetListenerDirection(me.Direction())
 			printDirection(me.Direction())
 		}
 	})
@@ -213,6 +270,7 @@ func runTiles() {
 	}
 
 	cn.Destroy()
+	snd.Terminate()
 }
 
 func main() {

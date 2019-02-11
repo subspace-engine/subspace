@@ -35,3 +35,10 @@ func (v Vec3) Abs() Vec3 {
 func (v Vec3) Equals(othr Vec3) bool {
 	return v.X == othr.X && v.Y == othr.Y && v.Z == othr.Z
 }
+
+func VecFromDirection(direction float64) Vec3 {
+	pos := Vec3{math.Sin(direction + 0.0001),
+		0,
+		math.Cos(direction + 0.00001)}
+	return pos
+}
