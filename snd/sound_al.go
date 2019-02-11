@@ -114,10 +114,18 @@ return 1;
 return 0;
 }
 
+int findBuffer(char * file) {
+for (int i =0; i < buffersLen; i++)
+if (strcmp(file, buffers[i]->file) ==0)
+return i;
+return -1;
+}
+
 int loadBuffer(char * file) {
 int ret;
-if (ret==FindBuffer(file))
-return ret;
+if ((ret=findBuffer(file))>=0) {
+printf("Found %s at %d\n", file, ret);
+return buffers[ret]->bufnum;
 }
 ALCenum error;
 Buffer *buffer = malloc(sizeof(Buffer));
@@ -131,7 +139,7 @@ if (error!=AL_NO_ERROR)
 printf("Error generating buffer");
 ret= arrayAdd(&buffers, &buffersLen, &buffersCap, (void*)buffer);
 alBufferData(buffers[ret]->bufnum, AL_FORMAT_MONO16, buffers[ret]->chunk->abuf, buffers[ret]->chunk->alen, 44100);
-return ret;
+return buffers[ret]->bufnum;
 }
 
 int createSource() {
@@ -147,11 +155,9 @@ return source;
 }
 
 void setSourceBuffer(int source, int buffer) {
-if (!checkArrayElem(buffers, buffer))
-return;
 ALCenum error;
 alGetError();
-alSourcei(source, AL_BUFFER, buffers[buffer]->bufnum);
+alSourcei(source, AL_BUFFER, buffer);
 error=alGetError();
 if (error!=AL_NO_ERROR)
 printf("Error setting buffer\n");
@@ -174,8 +180,8 @@ printf("Error setting position");
 
 int isPlaying(int source) {
 int ret=0;
-alGetSourcei(source, AL_PLAYING, &ret);
-return ret;
+alGetSourcei(source, AL_SOURCE_STATE, &ret);
+return ret==AL_PLAYING;
 }
 
 void setLooping(int sound, int looping) {

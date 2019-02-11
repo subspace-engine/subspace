@@ -37,8 +37,8 @@ func (v Vec3) Equals(othr Vec3) bool {
 }
 
 func VecFromDirection(direction float64) Vec3 {
-	pos := Vec3{math.Sin(direction + 0.0001),
+	pos := Vec3{math.Sin(direction + 0.000001),
 		0,
-		math.Cos(direction + 0.00001)}
+		-math.Cos(direction + 0.000001)}
 	return pos
 }

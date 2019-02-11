@@ -154,18 +154,19 @@ func playFloorSounds(pos util.Vec3, dir float64, space world.Space) {
 	snd.SetPosition(i, pos)
 	left := pos.Add(util.VecFromDirection(dir - math.Pi/2))
 	right := pos.Add(util.VecFromDirection(dir + math.Pi/2))
-	time.Sleep(time.Millisecond * 100)
 	if space.Encloses(left) {
+		time.Sleep(time.Millisecond * 50)
 		tile := space.TileAt(int(left.X), int(left.Y), int(left.Z))
 		if tile.Passable() {
-			i := snd.PlaySound("footstep.wav")
+			i := snd.PlaySound("footstep.ogg")
 			snd.SetPosition(i, left)
 		}
 	}
 	if space.Encloses(right) {
+		time.Sleep(time.Millisecond * 20)
 		tile := space.TileAt(int(right.X), int(right.Y), int(right.Z))
 		if tile.Passable() {
-			i := snd.PlaySound("footstep.wav")
+			i := snd.PlaySound("footstep.ogg")
 			snd.SetPosition(i, right)
 		}
 	}
@@ -200,6 +201,7 @@ func runTiles() {
 	me.RegisterPrintFunc(cn.Println)
 	//	me := model.MakeMobileThing("you", "As good looking as ever.")
 	me.SetPosition(util.Vec3{10, 0, 10})
+	snd.SetListenerPosition(me.Position().Add(util.Vec3{0, 1, 0}))
 	chair := model.MakeBasicThing("a chair", "Just a basic chair")
 	chair.SetPosition(util.Vec3{8, 0, 4})
 	me.RegisterAction("bump", func(action model.Action) bool {
@@ -224,8 +226,8 @@ func runTiles() {
 		if loc == nil {
 			return true
 		}
-		snd.SetListenerPosition(me.Position())
-		go playFloorSounds(me.Position(), me.Direction(), tiles)
+		snd.SetListenerPosition(me.Position().Add(util.Vec3{0, 1, 0}))
+		playFloorSounds(me.Position(), me.Direction(), tiles)
 		return true
 	})
 	makeWorld(tiles)
