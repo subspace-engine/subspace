@@ -1,6 +1,7 @@
 package model
 
 import (
+	"github.com/google/uuid"
 	"github.com/subspace-engine/subspace/util"
 	"math"
 )
@@ -44,6 +45,26 @@ func (loc *basicLocater) RemoveChild(child Thing) {
 	loc.children = loc.children[:len(loc.children)-1]
 }
 
+type UuidIdentity struct {
+	id string
+}
+
+func (self *UuidIdentity) SetID(id string) {
+	self.id = id
+}
+
+func (self UuidIdentity) ID() string {
+	return self.id
+}
+
+func MakeIdentity() Identity {
+	uuid, err := uuid.NewRandom()
+	if err != nil {
+		panic("Unable to make uuid.")
+	}
+	return &UuidIdentity{uuid.String()}
+}
+
 type BasicThing struct {
 	objType int
 	Shape
@@ -52,10 +73,11 @@ type BasicThing struct {
 	passable    bool
 	Actor
 	Locater
+	Identity
 }
 
 func MakeBasicThing(name string, description string) *BasicThing {
-	return &BasicThing{0, &Point{util.Vec3{0, 0, 0}}, name, description, false, MakeActionManager(), makeLocater()}
+	return &BasicThing{0, &Point{util.Vec3{0, 0, 0}}, name, description, false, MakeActionManager(), makeLocater(), MakeIdentity()}
 }
 
 func MakePassableThing(name string, description string, passable bool) *BasicThing {

@@ -1,21 +1,21 @@
 package con
 
 type Keymap struct {
-	KeyUp    int
-	KeyDown  int
-	KeyLeft  int
-	KeyRight int
+	KeyUp    rune
+	KeyDown  rune
+	KeyLeft  rune
+	KeyRight rune
 }
 
 type EventProc interface {
-	SetKeyDown(keydown func(int))
-	SetKeyUp(keyup func(int))
+	SetKeyDown(keydown func(rune))
+	SetKeyUp(keyup func(rune))
 	Pump()
 }
 
 type Console interface {
 	MakeEventProc() EventProc
-	ReadKey() int
+	ReadKey() rune
 	ReadLine() string
 	Print(string)
 	Println(string)

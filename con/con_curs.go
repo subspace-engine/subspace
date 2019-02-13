@@ -33,15 +33,15 @@ type CursesConsole struct {
 
 type CursesEventProc struct {
 	parent  *CursesConsole
-	keyDown func(int)
-	keyUp   func(int)
+	keyDown func(rune)
+	keyUp   func(rune)
 }
 
-func (proc *CursesEventProc) SetKeyDown(keydown func(int)) {
+func (proc *CursesEventProc) SetKeyDown(keydown func(rune)) {
 	proc.keyDown = keydown
 }
 
-func (proc *CursesEventProc) SetKeyUp(keyup func(int)) {
+func (proc *CursesEventProc) SetKeyUp(keyup func(rune)) {
 	proc.keyUp = keyup
 }
 
@@ -82,8 +82,8 @@ func (self *CursesConsole) Println(text string) {
 	self.Print(text + "\n")
 }
 
-func (*CursesConsole) ReadKey() int {
-	return int(C.getch())
+func (*CursesConsole) ReadKey() rune {
+	return rune(C.getch())
 }
 
 func (*CursesConsole) ReadLine() string {
@@ -94,10 +94,10 @@ func (*CursesConsole) ReadLine() string {
 
 func (*CursesConsole) Map() Keymap {
 	km := Keymap{}
-	km.KeyUp = int(C.KEY_UP)
-	km.KeyDown = int(C.KEY_DOWN)
-	km.KeyLeft = int(C.KEY_LEFT)
-	km.KeyRight = int(C.KEY_RIGHT)
+	km.KeyUp = rune(C.KEY_UP)
+	km.KeyDown = rune(C.KEY_DOWN)
+	km.KeyLeft = rune(C.KEY_LEFT)
+	km.KeyRight = rune(C.KEY_RIGHT)
 	return km
 }
 
@@ -112,9 +112,9 @@ func (*CursesConsole) nodelay(delay bool) {
 func (self *CursesConsole) MakeEventProc() EventProc {
 	proc := CursesEventProc{}
 	proc.parent = self
-	proc.keyDown = func(key int) {
+	proc.keyDown = func(key rune) {
 	}
-	proc.keyUp = func(key int) {
+	proc.keyUp = func(key rune) {
 	}
 	return &proc
 }

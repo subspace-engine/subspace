@@ -2,6 +2,11 @@ package model
 
 import "github.com/subspace-engine/subspace/util"
 
+type Identity interface {
+	ID() string
+	SetID(string)
+}
+
 type Namer interface {
 	Name() string
 	SetName(string)
@@ -58,4 +63,5 @@ type MobileThing interface {
 	SetStepSize(float64)
 	Direction() float64
 	SetDirection(float64)
+	Identity
 }
