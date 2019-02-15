@@ -4,6 +4,7 @@ import "github.com/subspace-engine/subspace/world/model"
 import "github.com/subspace-engine/subspace/con"
 import "strings"
 import "time"
+import "fmt"
 
 type Command struct {
 	Key     rune
@@ -12,15 +13,18 @@ type Command struct {
 }
 
 type CommandParser struct {
-	Commands map[string]Command
-	Keys     map[rune]Command
-	Con      con.Console
-	Player   model.Player
-	Parsing  bool
+	Commands   map[string]Command
+	Keys       map[rune]Command
+	Con        con.Console
+	Player     model.Player
+	Parsing    bool
+	QuitKey    rune
+	HelpKey    rune
+	CommandKey rune
 }
 
 func MakeCommandParser(console con.Console, player model.Player) *CommandParser {
-	return &CommandParser{make(map[string]Command, 0), make(map[rune]Command, 0), console, player, false}
+	return &CommandParser{make(map[string]Command, 0), make(map[rune]Command, 0), console, player, false, 'q', 'h', ':'}
 }
 
 func (self CommandParser) ParseKey(key rune) {
@@ -34,11 +38,11 @@ func (self CommandParser) ParseKey(key rune) {
 }
 
 func (self CommandParser) ParseCommand(line string) {
-	words := strings.Split(line, " ")
-	if len(words) == 0 {
+	if len(line) == 0 {
 		self.Player.Say("I beg your pardon?")
 		return
 	}
+	words := strings.Split(line, " ")
 	first := words[0]
 	command, prs := self.Commands[first]
 	if !prs {
@@ -52,14 +56,29 @@ func (self *CommandParser) Start() {
 	go self.RunParser()
 }
 
+func (self CommandParser) DisplayHelp() {
+	self.Con.Println("Help:")
+	self.Con.Println(fmt.Sprintf("%c: Quit the application", self.QuitKey))
+	for key, val := range self.Keys {
+		self.Con.Println(fmt.Sprintf("%c: %s", key, val.Command))
+	}
+}
+
 func (self *CommandParser) RunParser() {
 	self.Parsing = true
+	self.Con.Println(fmt.Sprintf("Press %c to quit, and %c for help.", self.QuitKey, self.HelpKey))
 	proc := self.Con.MakeEventProc()
 	proc.SetKeyDown(func(key rune) {
 		switch key {
-		case ':':
+		case self.CommandKey:
+			self.Con.Print(":")
 			line := self.Con.ReadLine()
 			self.ParseCommand(line)
+		case self.QuitKey:
+			self.Con.Println("Quitting...")
+			self.Parsing = false
+		case self.HelpKey:
+			self.DisplayHelp()
 		default:
 			self.ParseKey(key)
 		}

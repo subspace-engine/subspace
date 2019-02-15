@@ -15,6 +15,7 @@ import (
 )
 
 var cn con.Console
+var lastObj model.Thing
 
 func makeWorld(space world.Space) {
 	file, err := os.Open("maze.txt")
@@ -95,8 +96,15 @@ func runTiles() {
 	km := cn.Map()
 	rand.Seed(time.Now().Unix())
 	tiles := world.MakeBasicSpace(100, 100, 100, 1, 20, world.MakeBasicTile(model.MakePassableThing("wall", "just a wall", false)))
+	lastObj = nil
 	me := model.MakePlayer("you", "As good looking as ever.")
 	snd.SetListenerDirection(0)
+	me.RegisterAction("describe", func(action model.Action) bool {
+		if lastObj != nil {
+			cn.Println(lastObj.Description())
+		}
+		return true
+	})
 	me.RegisterPrintFunc(cn.Println)
 	me.SetPosition(util.Vec3{10, 0, 10})
 	me.SetStepSize(0.6)
@@ -106,6 +114,7 @@ func runTiles() {
 	me.RegisterAction("bump", func(action model.Action) bool {
 		if action.Dobj != nil {
 			action.Source.Say("You bumped into " + action.Dobj.Name() + ".")
+			lastObj = action.Dobj
 			sound := snd.PlaySound("wall.ogg")
 			snd.SetPosition(sound, action.Dobj.Position())
 		}
@@ -147,6 +156,7 @@ func runTiles() {
 	parser.AddCommand('N', "sideleft", "sidestep left")
 	parser.AddCommand('I', "sideright", "sidestep right")
 	parser.AddCommand(km.KeyDown, "reverse", "reverse")
+	parser.AddCommand('d', "describe", "describe")
 	parser.AddCommand('e', "reverse", "reverse")
 	me.RegisterPostaction("turn left", func(model.Action) bool {
 		snd.SetListenerDirection(me.Direction())
