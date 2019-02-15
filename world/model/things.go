@@ -151,7 +151,7 @@ type BasicMobileThing struct {
 
 func MakeMobileThing(name string, description string) MobileThing {
 	t := &BasicMobileThing{MakeBasicThing(name, description), 1, 0}
-	t.RegisterAction("move", func(action Action) bool {
+	t.RegisterAction("forward", func(action Action) bool {
 		if action.Source == nil {
 			return false
 		}
@@ -168,6 +168,74 @@ func MakeMobileThing(name string, description string) MobileThing {
 		}
 		return false
 	})
+	t.RegisterAction("sidestep left", func(action Action) bool {
+		if action.Source == nil {
+			return false
+		}
+		thing, ok := action.Source.(MobileThing)
+		if !ok {
+			return false
+		}
+
+		pos := util.Vec3{math.Sin(t.direction-(math.Pi/2))*t.stepSize/2.0 + 0.000001,
+			0,
+			-math.Cos(t.direction-(math.Pi/2))*t.stepSize/2.0 + 0.000001}
+		if thing.Location() != nil {
+			return thing.Location().Move(thing, pos)
+		}
+		return false
+	})
+	t.RegisterAction("sidestep right", func(action Action) bool {
+		if action.Source == nil {
+			return false
+		}
+		thing, ok := action.Source.(MobileThing)
+		if !ok {
+			return false
+		}
+
+		pos := util.Vec3{math.Sin(t.direction+(math.Pi/2))*t.stepSize/2.0 + 0.000001,
+			0,
+			-math.Cos(t.direction+(math.Pi/2))*t.stepSize/2.0 + 0.000001}
+		if thing.Location() != nil {
+			return thing.Location().Move(thing, pos)
+		}
+		return false
+	})
+	t.RegisterAction("reverse", func(action Action) bool {
+		if action.Source == nil {
+			return false
+		}
+		thing, ok := action.Source.(MobileThing)
+		if !ok {
+			return false
+		}
+
+		pos := util.Vec3{math.Sin(t.direction+math.Pi)*t.stepSize/2.0 + 0.000001,
+			0,
+			-math.Cos(t.direction+math.Pi)*t.stepSize/2.0 + 0.000001}
+		if thing.Location() != nil {
+			return thing.Location().Move(thing, pos)
+		}
+		return false
+	})
+	t.RegisterAction("turn left", func(action Action) bool {
+		source, ok := action.Source.(MobileThing)
+		if !ok {
+			return false
+		}
+		source.SetDirection(math.Mod(source.Direction()-(math.Pi/2.0)+(2*math.Pi), 2*math.Pi))
+		return true
+	})
+	t.RegisterAction("turn right", func(action Action) bool {
+		source, ok := action.Source.(MobileThing)
+		if !ok {
+			return false
+		}
+		source.SetDirection(math.Mod(source.Direction()+(math.Pi/2.0)+(2*math.Pi), 2*math.Pi))
+		return true
+	})
+
 	return t
 }
 

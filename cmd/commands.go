@@ -66,7 +66,7 @@ func (self *CommandParser) RunParser() {
 	})
 	for self.Parsing {
 		proc.Pump()
-		time.Sleep(time.Millisecond * 100)
+		time.Sleep(time.Millisecond * 5)
 	}
 }
 

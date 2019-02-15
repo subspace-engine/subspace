@@ -15,6 +15,10 @@ type Point struct {
 	pos util.Vec3
 }
 
+func MakePoint(v util.Vec3) *Point {
+	return &Point{v}
+}
+
 func (p Point) Position() util.Vec3 {
 	return p.pos
 }

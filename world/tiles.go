@@ -1,7 +1,6 @@
 package world
 
 import (
-	"fmt"
 	"github.com/subspace-engine/subspace/util"
 	"github.com/subspace-engine/subspace/world/model"
 )
@@ -16,6 +15,14 @@ func MakeBasicTile(tileObject model.Thing) Tile {
 }
 
 func (tile BasicTile) Position() util.Vec3 {
+	space, ok := tile.Location().(Space)
+	if ok {
+		return tile.position.Mul(space.TileSize())
+	}
+	return tile.position
+}
+
+func (tile BasicTile) TilePosition() util.Vec3 {
 	return tile.position
 }
 
@@ -31,7 +38,7 @@ type Things [][][][]model.Thing
 type BasicSpace struct {
 	tiles       Tiles
 	things      Things
-	TileSize    float64
+	tileSize    float64
 	thingMul    float64
 	players     []model.Player
 	model.Thing // to conform to the Thing interface, allows us to give spaces names and descriptions
@@ -100,9 +107,13 @@ func (self Things) add(pos util.Vec3, thing model.Thing) {
 
 }
 
+func (space BasicSpace) TileSize() float64 {
+	return space.tileSize
+}
+
 func (self BasicSpace) Move(thing model.Thing, pos util.Vec3) bool {
-	tilepos := thing.Position().Div(self.TileSize)
-	newpos := thing.Position().Add(pos).Div(self.TileSize)
+	tilepos := thing.Position().Div(self.tileSize)
+	newpos := thing.Position().Add(pos).Div(self.tileSize)
 	if self.Encloses(newpos) {
 		tile := self.tiles[int(newpos.X)][int(newpos.Y)][int(newpos.Z)]
 		if tile.Passable() {
@@ -111,7 +122,7 @@ func (self BasicSpace) Move(thing model.Thing, pos util.Vec3) bool {
 
 			thing.SetPosition(thing.Position().Add(pos))
 			thing.SetLocation(tile)
-			go thing.Act(model.Action{thing, "step", tile, nil})
+			go thing.Act(model.Action{thing, "move", tile, nil})
 			self.calculateEncounters(tile, thing, newpos)
 			return true
 		}
@@ -135,9 +146,9 @@ func (self *BasicSpace) shiftThing(thing model.Thing, pos util.Vec3, newpos util
 }
 
 func (self BasicSpace) GetTile(thing model.Thing) Tile {
-	x := int(thing.Position().X / self.TileSize)
-	y := int(thing.Position().Y / self.TileSize)
-	z := int(thing.Position().Z / self.TileSize)
+	x := int(thing.Position().X / self.tileSize)
+	y := int(thing.Position().Y / self.tileSize)
+	z := int(thing.Position().Z / self.tileSize)
 	return self.tiles[x][y][z]
 }
 
@@ -159,13 +170,12 @@ func (self BasicSpace) Encloses(pos util.Vec3) bool {
 }
 
 func (self *BasicSpace) Add(thing model.Thing) {
-	tilepos := self.Position().Div(self.TileSize)
+	tilepos := self.Position().Div(self.tileSize)
 	if self.Encloses(tilepos) {
 		self.things.add(tilepos.Div(self.thingMul), thing)
 		thing.SetLocation(self.TileAt(int(tilepos.X), int(tilepos.Y), int(tilepos.Z)))
 		player, ok := thing.(model.Player)
 		if ok {
-			fmt.Println("adding player")
 			self.addPlayer(player)
 		}
 	}
@@ -189,7 +199,7 @@ func (self *BasicSpace) thingsOnTile(x int, y int, z int) []model.Thing {
 	tilePosition := util.Vec3{float64(x), float64(y), float64(z)}
 	thingLocation := tilePosition.Div(self.thingMul)
 	for _, val := range self.things[int(thingLocation.X)][int(thingLocation.Y)][int(thingLocation.Z)] {
-		if val.Position().Div(self.TileSize).Equals(tilePosition) {
+		if val.Position().Div(self.tileSize).Equals(tilePosition) {
 			children = append(children, val)
 		}
 	}
@@ -201,7 +211,7 @@ func (tile BasicTile) Children() []model.Thing {
 	if !err {
 		return make([]model.Thing, 0, 0)
 	}
-	pos := tile.Position()
+	pos := tile.TilePosition()
 	return space.thingsOnTile(int(pos.X), int(pos.Y), int(pos.Z))
 }
 
@@ -221,7 +231,7 @@ func (self *BasicSpace) calculateEncounters(tile Tile, thing model.Thing, pos ut
 }
 
 func (space *BasicSpace) Remove(thing model.Thing) {
-	pos := thing.Position().Div(space.TileSize).Div(space.thingMul)
+	pos := thing.Position().Div(space.tileSize).Div(space.thingMul)
 	space.things.remove(pos, thing)
 	thing.SetLocation(nil)
 	player, ok := thing.(model.Player)

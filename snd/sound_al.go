@@ -124,7 +124,6 @@ return -1;
 int loadBuffer(char * file) {
 int ret;
 if ((ret=findBuffer(file))>=0) {
-printf("Found %s at %d\n", file, ret);
 return buffers[ret]->bufnum;
 }
 ALCenum error;

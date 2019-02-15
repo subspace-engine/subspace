@@ -10,6 +10,7 @@ type Tile interface {
 }
 
 type Space interface {
+	TileSize() float64
 	GetTile(model.Thing) Tile
 	SetTile(x int, y int, z int, tile Tile)
 	Encloses(util.Vec3) bool

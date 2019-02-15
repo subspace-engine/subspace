@@ -68,6 +68,7 @@ reader:
 func playFloorSounds(pos util.Vec3, dir float64, space world.Space) {
 	i := snd.PlaySound("step.ogg")
 	snd.SetPosition(i, pos)
+	pos = pos.Div(space.TileSize())
 	left := pos.Add(util.VecFromDirection(dir - math.Pi/2))
 	right := pos.Add(util.VecFromDirection(dir + math.Pi/2))
 	if space.Encloses(left) {
@@ -98,20 +99,21 @@ func runTiles() {
 	snd.SetListenerDirection(0)
 	me.RegisterPrintFunc(cn.Println)
 	me.SetPosition(util.Vec3{10, 0, 10})
+	me.SetStepSize(0.6)
 	snd.SetListenerPosition(me.Position().Add(util.Vec3{0, 1, 0}))
 	chair := model.MakeBasicThing("a chair", "Just a basic chair")
 	chair.SetPosition(util.Vec3{8, 0, 4})
 	me.RegisterAction("bump", func(action model.Action) bool {
 		if action.Dobj != nil {
 			action.Source.Say("You bumped into " + action.Dobj.Name() + ".")
-			sound := snd.PlaySound("wall.wav")
+			sound := snd.PlaySound("wall.ogg")
 			snd.SetPosition(sound, action.Dobj.Position())
 		}
 		return true
 	})
 	me.RegisterPostaction("encounter", func(action model.Action) bool {
 		if action.Dobj != nil {
-			cn.Println("you encountered %s." + action.Dobj.Name())
+			cn.Println("you encountered " + action.Dobj.Name())
 		}
 		return true
 	})
@@ -136,8 +138,24 @@ func runTiles() {
 	tiles.Add(me)
 	tiles.Add(chair)
 	parser := cmd.MakeCommandParser(cn, me)
-	parser.AddCommand('u', "forward", "move")
-	parser.AddCommand(km.KeyUp, "forward", "move")
+	parser.AddCommand('u', "forward", "forward")
+	parser.AddCommand(km.KeyUp, "forward", "forward")
+	parser.AddCommand(km.KeyRight, "right", "turn right")
+	parser.AddCommand(km.KeyLeft, "left", "turn left")
+	parser.AddCommand('i', "right", "turn right")
+	parser.AddCommand('n', "left", "turn left")
+	parser.AddCommand('N', "sideleft", "sidestep left")
+	parser.AddCommand('I', "sideright", "sidestep right")
+	parser.AddCommand(km.KeyDown, "reverse", "reverse")
+	parser.AddCommand('e', "reverse", "reverse")
+	me.RegisterPostaction("turn left", func(model.Action) bool {
+		snd.SetListenerDirection(me.Direction())
+		return true
+	})
+	me.RegisterPostaction("turn right", func(model.Action) bool {
+		snd.SetListenerDirection(me.Direction())
+		return true
+	})
 	parser.RunParser()
 
 	cn.Destroy()
