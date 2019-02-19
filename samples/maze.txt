@@ -1,0 +1,27 @@
+0, 0, 5, 5
+wwwww
+wxxwx
+wxxwx
+wxxxx
+wxwww
+5, 0, 10, 3
+wwwwwwwwww
+xxxxxxxxxx
+wwwwwxwwww
+6, 3, 9, 16
+wxxwxwxxw
+wxxxxxxxw
+wxxwxwxxw
+wxxwxwxxw
+wwwwxwwww
+wxxwxwxxw
+wxxwxwxxw
+wxxxxwxxw
+wxxwxxxxw
+wxxwxwxxw
+wwwwxwwww
+wxxwxwxxw
+wxxxxxxxw
+wwwwxwwww
+wxxxxxxxw
+wwwwwwwww
