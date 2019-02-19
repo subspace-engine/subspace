@@ -6,7 +6,7 @@ import "sync"
 import "unsafe"
 
 /*
-#cgo LDFLAGS: -lSDL2 -lSDL2_mixer -lopenal
+#cgo LDFLAGS: -lSDL2 -lSDL2_mixer
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -45,6 +45,12 @@ alListener3f(AL_POSITION, x, y, z);
 void setListenerOrientation(float atx, float aty, float atz, float upx, float upy, float upz) {
 float vec[6] = {atx, aty, atz, upx, upy, upz};
 alListenerfv(AL_ORIENTATION, vec);
+}
+
+void debugprint(char * text) {
+#if 0
+printf(text);
+#endif
 }
 
 void init() {
@@ -123,22 +129,30 @@ return -1;
 
 int loadBuffer(char * file) {
 int ret;
-if ((ret=findBuffer(file))>=0) {
+if ((ret=findBuffer(file))>=0)
 return buffers[ret]->bufnum;
-}
 ALCenum error;
 Buffer *buffer = malloc(sizeof(Buffer));
 buffer->chunk=Mix_LoadWAV(file);
+if (buffer->chunk==NULL) {
+free(buffer);
+printf("Unable to load sound %s.\n", file);
+}
 buffer->file=malloc(strlen(file)+1);
+debugprint("copy file\n");
 strcpy(buffer->file, file);
 alGetError();
+debugprint("al gen buffers\n");
 alGenBuffers(1, &buffer->bufnum);
 error = alGetError();
 if (error!=AL_NO_ERROR)
 printf("Error generating buffer");
+debugprint("array add\n");
 ret= arrayAdd(&buffers, &buffersLen, &buffersCap, (void*)buffer);
-alBufferData(buffers[ret]->bufnum, AL_FORMAT_MONO16, buffers[ret]->chunk->abuf, buffers[ret]->chunk->alen, 44100);
-return buffers[ret]->bufnum;
+debugprint("buffer data\n");
+alBufferData(buffer->bufnum, AL_FORMAT_MONO16, buffer->chunk->abuf, buffer->chunk->alen, 44100);
+debugprint("return\n");
+return buffer->bufnum;
 }
 
 int createSource() {

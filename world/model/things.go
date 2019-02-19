@@ -66,7 +66,7 @@ func MakeIdentity() Identity {
 }
 
 type BasicThing struct {
-	objType int
+	objType string
 	Shape
 	name        string
 	description string
@@ -77,7 +77,7 @@ type BasicThing struct {
 }
 
 func MakeBasicThing(name string, description string) *BasicThing {
-	return &BasicThing{0, &Point{util.Vec3{0, 0, 0}}, name, description, false, MakeActionManager(), makeLocater(), MakeIdentity()}
+	return &BasicThing{"Thing", &Point{util.Vec3{0, 0, 0}}, name, description, false, MakeActionManager(), makeLocater(), MakeIdentity()}
 }
 
 func MakePassableThing(name string, description string, passable bool) *BasicThing {
@@ -86,7 +86,7 @@ func MakePassableThing(name string, description string, passable bool) *BasicThi
 	return t
 }
 
-func MakeTypedThing(objType int, name string, description string, passable bool) *BasicThing {
+func MakeTypedThing(objType string, name string, description string, passable bool) *BasicThing {
 	t := MakePassableThing(name, description, passable)
 	t.SetType(objType)
 	return t
@@ -120,11 +120,11 @@ func (self *BasicThing) SetPassable(passable bool) {
 	self.passable = passable
 }
 
-func (self *BasicThing) Type() int {
+func (self *BasicThing) Type() string {
 	return self.objType
 }
 
-func (self *BasicThing) SetType(objType int) {
+func (self *BasicThing) SetType(objType string) {
 	self.objType = objType
 }
 
@@ -151,6 +151,7 @@ type BasicMobileThing struct {
 
 func MakeMobileThing(name string, description string) MobileThing {
 	t := &BasicMobileThing{MakeBasicThing(name, description), 1, 0}
+	t.SetType(t.Type() + ":MobileThing")
 	t.RegisterAction("forward", func(action Action) bool {
 		if action.Source == nil {
 			return false

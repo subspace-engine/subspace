@@ -56,6 +56,7 @@ func (proc *CursesEventProc) Pump() {
 
 func MakeTextConsole() *CursesConsole {
 	C.initscr()
+	C.ESCDELAY = 50
 	C.cbreak()
 	C.noecho()
 	C.keypad(C.stdscr, true)
@@ -98,6 +99,19 @@ func (*CursesConsole) Map() Keymap {
 	km.KeyDown = rune(C.KEY_DOWN)
 	km.KeyLeft = rune(C.KEY_LEFT)
 	km.KeyRight = rune(C.KEY_RIGHT)
+	km.KeyF1 = rune(C.KEY_F0 + 1)
+	km.KeyF2 = rune(C.KEY_F0 + 2)
+	km.KeyF3 = rune(C.KEY_F0 + 3)
+	km.KeyF4 = rune(C.KEY_F0 + 4)
+	km.KeyF5 = rune(C.KEY_F0 + 5)
+	km.KeyF6 = rune(C.KEY_F0 + 6)
+	km.KeyF7 = rune(C.KEY_F0 + 7)
+	km.KeyF8 = rune(C.KEY_F0 + 8)
+	km.KeyF9 = rune(C.KEY_F0 + 9)
+	km.KeyF10 = rune(C.KEY_F0 + 10)
+	km.KeyF11 = rune(C.KEY_F0 + 11)
+	km.KeyF12 = rune(C.KEY_F0 + 12)
+	km.KeyEscape = rune(27)
 	return km
 }
 

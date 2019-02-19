@@ -12,7 +12,9 @@ type BasicPlayer struct {
 }
 
 func MakePlayer(name string, description string) Player {
-	return &BasicPlayer{MakeMobileThing(name, description), nil}
+	p := &BasicPlayer{MakeMobileThing(name, description), nil}
+	p.SetType(p.Type() + ":Player")
+	return p
 }
 
 func (self *BasicPlayer) RegisterPrintFunc(printFunc func(text string)) {

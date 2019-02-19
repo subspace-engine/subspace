@@ -18,8 +18,8 @@ type Describer interface {
 }
 
 type Typer interface {
-	Type() int
-	SetType(int)
+	Type() string
+	SetType(string)
 }
 
 type Mover interface {
