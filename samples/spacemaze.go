@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"github.com/subspace-engine/subspace/cmd"
 	"github.com/subspace-engine/subspace/con"
@@ -11,18 +12,20 @@ import (
 	"math"
 	"math/rand"
 	"os"
+	"strings"
 	"time"
 )
 
 var cn con.Console
 var lastObj model.Thing
 
-func makeWorld(space world.Space) {
-	file, err := os.Open("maze.txt")
+func makeWorld(space world.Space, name string) {
+	file, err := os.Open(name)
 	if err != nil {
-		panic("Unable to open data file!")
+		panic("Unable to open data file " + name)
 	}
 	defer file.Close()
+	filereader := bufio.NewReader(file)
 	wall := model.MakePassableThing("wall", "A metal wall", false)
 	floor := model.MakePassableThing("floor", "Just the floor", true)
 	for i := 0; i < 100; i++ {
@@ -32,37 +35,33 @@ func makeWorld(space world.Space) {
 			}
 		}
 	}
+	x, y := 0, 0
 reader:
 	for {
-		x, y, w, h := 0, 0, 0, 0
-		_, err := fmt.Fscanf(file, "%d, %d, %d, %d\n", &x, &y, &w, &h)
+		var line string
+		linebytes, _, err := filereader.ReadLine()
 		if err != nil {
 			//				fmt.Println("unable to read coords")
 			//				fmt.Println(err)
+			fmt.Println("done")
 			break reader
 		}
-		for k := y; k < y+h; k++ {
-			j := 0
-			for i := x; i < x+w; i++ {
-				symbol := ' '
-				_, err := fmt.Fscanf(file, "%c", &symbol)
-				if err != nil {
-					fmt.Println("Unable to read letter")
-					break reader
-				}
-				switch symbol {
-				case 'x':
-					space.SetTile(i, j, k, world.MakeBasicTile(floor))
-				case 'w':
-					space.SetTile(i, j, k, world.MakeBasicTile(wall))
-				}
+		line = string(linebytes)
+		_, err = fmt.Sscanf(line, "%d, %d", &x, &y)
+		if err == nil {
+			fmt.Printf("Continue reading at %d, %d\n", x, y)
+			continue reader
+		}
+		for i, symbol := range line {
+			switch symbol {
+			case 'x':
+				space.SetTile(x+i, 0, y, world.MakeBasicTile(floor))
 
-			}
-			_, err = fmt.Fscanf(file, "\n")
-			if err != nil {
-				break reader
+			case 'w':
+				space.SetTile(x+i, 0, y, world.MakeBasicTile(wall))
 			}
 		}
+		y++
 	}
 }
 
@@ -99,6 +98,10 @@ func runTiles() {
 	lastObj = nil
 	me := model.MakePlayer("you", "As good looking as ever.")
 	snd.SetListenerDirection(0)
+	me.RegisterAction("pos", func(action model.Action) bool {
+		fmt.Printf("%d, %d\n", int(me.Position().X), int(me.Position().Z))
+		return true
+	})
 	me.RegisterAction("describe", func(action model.Action) bool {
 		if lastObj != nil {
 			cn.Println(lastObj.Description())
@@ -106,7 +109,7 @@ func runTiles() {
 		return true
 	})
 	me.RegisterPrintFunc(cn.Println)
-	me.SetPosition(util.Vec3{10, 0, 10})
+	me.SetPosition(util.Vec3{1, 0, 1})
 	me.SetStepSize(0.6)
 	snd.SetListenerPosition(me.Position().Add(util.Vec3{0, 1, 0}))
 	chair := model.MakeBasicThing("a chair", "Just a basic chair")
@@ -138,7 +141,12 @@ func runTiles() {
 		playFloorSounds(me.Position(), me.Direction(), tiles)
 		return true
 	})
-	makeWorld(tiles)
+	name := strings.TrimSuffix(os.Args[0], ".exe") + ".ssm"
+	if len(os.Args) > 1 {
+		name = os.Args[1]
+	}
+	fmt.Printf("Loading file %s\n", name)
+	makeWorld(tiles, name)
 	machine := world.MakeBasicTile(model.MakePassableThing("Machine", "Some kind of machine", false))
 	tiles.SetTile(2, 0, 2, machine)
 	machinesound := snd.PlaySound("machine.wav")
@@ -151,6 +159,7 @@ func runTiles() {
 		return true
 	})
 	parser := cmd.MakeCommandParser(cn, me)
+	parser.AddCommand(' ', "position", "pos")
 	parser.AddCommand('n', "name", "name")
 	parser.AddCommand('i', "forward", "forward")
 	parser.MakeKeyAbsolute('i')
